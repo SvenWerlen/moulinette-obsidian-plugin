@@ -10,7 +10,8 @@ export class MoulinetteAsset {
     const asset = new MoulinetteAsset()
     if(typeof obj === "string" || obj instanceof String) {
       asset.path = obj.toString()
-      if(asset.path.endsWith(".webp")) {
+      if(asset.path.endsWith(".webp") || asset.path.endsWith(".md")) {
+      //if(asset.path.endsWith(".md")) {
         return asset
       }
     }

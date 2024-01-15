@@ -1,5 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { ExampleModal } from 'moulinette-search';
+import { MoulinetteSearchModal } from 'moulinette-search';
 import { MoulinetteAsset, MoulinetteCreator, MoulinettePack } from 'moulinette-entities';
 
 // Remember to rename these classes and interfaces!
@@ -20,7 +20,6 @@ export default class HelloWorldPlugin extends Plugin {
 
 		const data = await fetch("http://127.0.0.1:5000/static/test/dummy.json")
 		const creators = MoulinetteCreator.importCreators(await data.json()) 
-		
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
@@ -67,7 +66,7 @@ export default class HelloWorldPlugin extends Plugin {
 			id: 'search-on-moulinette',
 			name: 'Search on Moulinette Cloud',
 			callback: () => {
-				new ExampleModal(this.app, creators).open();
+				new MoulinetteSearchModal(this.app, creators).open();
 			},
 		});
 

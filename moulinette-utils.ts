@@ -7,6 +7,7 @@ export class MoulinetteFileUtils {
   
   static PREFIX = "/moulinette"
   static REMOTE_BASE = "https://mttecloudstorage.blob.core.windows.net"
+  static MOULINETTE_BASEURL = "http://127.0.0.1:5000"
 
   /**
    * Improves name (originally a filepath) by replacing separators
@@ -16,7 +17,7 @@ export class MoulinetteFileUtils {
     name = name.indexOf(".") > 0 ? name.substring(0, name.indexOf(".")) : name // remover file extension (if any)
     // uppercase first letter of each word
     name = name.split(" ").map((word) => { 
-      return word[0].toUpperCase() + word.substring(1); 
+      return word.length < 2 ? word : word[0].toUpperCase() + word.substring(1); 
     }).join(" ");
     return name
   }
@@ -44,13 +45,12 @@ export class MoulinetteFileUtils {
     
     // download file
     if(!(await vault.adapter.exists(normalizePath(imagePath)))) {
-      fetch(url)
+      await fetch(url)
         .then(response => {
           if (!response.ok) { throw new Error(`HTTP ${response.status} - ${response.statusText}`) }
           return response.arrayBuffer();
         })
         .then(buffer => {
-          console.log(imagePath)
           vault.createBinary(imagePath, buffer)
       })
       .catch(err => {
@@ -62,6 +62,35 @@ export class MoulinetteFileUtils {
     }
 
     return imagePath
+  }
+
+  /**
+   * This utility function downloads a markdown content (from Moulinette Cloud)
+   * 
+   * @param vault current Vault
+   * @param url Markdown URL
+   * @returns markdown content
+   */
+  static async downloadMarkdown(vault: Vault, url: string) {
+    if(!url.startsWith(MoulinetteFileUtils.MOULINETTE_BASEURL)) {
+      console.log("Moulinette | URL not supported.", url)
+      return null
+    }
+
+    let markdownContent = ""
+    await fetch(url)
+      .then(response => {
+        if (!response.ok) { throw new Error(`HTTP ${response.status} - ${response.statusText}`) }
+        return response.text();
+      })
+      .then(text => {
+        markdownContent = text
+    })
+    .catch(err => {
+      console.error("Moulinette | Couldn't download the markdown!", err)
+    });
+    
+    return markdownContent
   }
 
   
