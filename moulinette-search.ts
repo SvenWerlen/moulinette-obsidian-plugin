@@ -1,23 +1,20 @@
-import { MoulinetteCreator } from "moulinette-entities";
-import { MoulinetteFileUtils } from "moulinette-utils";
+import { MoulinetteClient } from "moulinette-client";
+import { MoulinetteCreator, MoulinetteImage, MoulinetteSound, MoulinetteText } from "moulinette-entities";
+import { MoulinetteAssetResult } from "moulinette-results";
+import { MoulinetteUtils } from "moulinette-utils";
 import { App, MarkdownView, Notice, SuggestModal } from "obsidian";
 
-class AssetResult {
-  name: string;
-  pack: string;
-  creator: string;
-  thumb: string;
-  url: string;
-}
 
-export class MoulinetteSearchModal extends SuggestModal<AssetResult> {
+export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
 
   static MAX_RESULTS = 20
+  static ASSET_TYPE_ANY    = 0
+  static ASSET_TYPE_IMAGES = 1 // "!i"
+  static ASSET_TYPE_SOUNDS = 2 // "!s"
+  static ASSET_TYPE_TEXT   = 3 // "!t"
   
   // https://upload.wikimedia.org/wikipedia/commons/4/48/Markdown-mark.svg
   // https://yoksel.github.io/url-encoder/
-  static MARKDOWN_ICON = `data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="208" height="128" viewBox="0 0 208 128"><rect width="198" height="118" x="5" y="5" ry="10" stroke="%23FFF" stroke-width="10" fill="%23FFF"/><path d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>`
-
   creators: MoulinetteCreator[];
 
   constructor(app: App, creators: MoulinetteCreator[]) {
@@ -27,13 +24,25 @@ export class MoulinetteSearchModal extends SuggestModal<AssetResult> {
   }
 
   // Returns all available suggestions.
-  getSuggestions(query: string): AssetResult[] {
-    if(query.length == 0) return []
-    const terms = query.split(" ")
-    const results: AssetResult[] = []
+  getSuggestions(query: string): MoulinetteAssetResult[] {
+    const instr = query.split(" ").filter((t) => t.startsWith("!"))
+    const terms = query.split(" ").filter((t) => !t.startsWith("!"))
+    
+    let assetType = MoulinetteSearchModal.ASSET_TYPE_ANY
+    if(instr.includes("!i")) assetType = MoulinetteSearchModal.ASSET_TYPE_IMAGES
+    else if(instr.includes("!s")) assetType = MoulinetteSearchModal.ASSET_TYPE_SOUNDS
+    else if(instr.includes("!t")) assetType = MoulinetteSearchModal.ASSET_TYPE_TEXT
+    
+    const results: MoulinetteAssetResult[] = []
     for(const c of this.creators) {
       for(const p of c.packs) {
         for(const a of p.assets) {
+          // match type
+          if(assetType == MoulinetteSearchModal.ASSET_TYPE_IMAGES && !(a instanceof MoulinetteImage)) continue
+          if(assetType == MoulinetteSearchModal.ASSET_TYPE_SOUNDS && !(a instanceof MoulinetteSound)) continue
+          if(assetType == MoulinetteSearchModal.ASSET_TYPE_TEXT && !(a instanceof MoulinetteText)) continue
+
+          // match terms
           let match = true
           for(const t of terms) {
             if(!a.path || a.path.toLocaleLowerCase().indexOf(t.toLocaleLowerCase()) < 0) {
@@ -42,21 +51,12 @@ export class MoulinetteSearchModal extends SuggestModal<AssetResult> {
             }
           }
           if(match) {
-            const name = MoulinetteFileUtils.beautifyName(a.path.split("/").pop() || "")
-            let url, thumb
-            if(a.path.endsWith(".webp")) {
-              url = `${p.path}/${a.path}?${p.sas ? p.sas : ""}`
-              thumb = `${p.path}/${a.path.split('.').slice(0, -1).join('.')}_thumb.webp?${p.sas ? p.sas : ""}`
-            } else if(a.path.endsWith(".md")) {
-              url = `${MoulinetteFileUtils.MOULINETTE_BASEURL}/assets/download/8c9e0b6b50694fd5a23090a59b/7057?file=${a.path}`
-              thumb = "#MD"
-            } else {
-              continue
-            }
-
-            results.push({ name: name, thumb: thumb, pack: p.name, creator: c.name, url: url })
-            if(results.length >= MoulinetteSearchModal.MAX_RESULTS) {
-              return results
+            const result = MoulinetteAssetResult.fromEntity(a, p, c)
+            if(result) {
+              results.push(result)
+              if(results.length >= MoulinetteSearchModal.MAX_RESULTS) {
+                return results
+              }
             }
           }
         }
@@ -66,23 +66,16 @@ export class MoulinetteSearchModal extends SuggestModal<AssetResult> {
   }
 
   // Renders each suggestion item.
-  renderSuggestion(res: AssetResult, el: HTMLElement) {
-    const asset = el.createEl("div", { cls: "asset" });
-    const img = asset.createEl("img");
-    img.setAttribute('src', res.thumb == "#MD" ? MoulinetteSearchModal.MARKDOWN_ICON : res.thumb);
-    const info = asset.createEl("div", { cls: "info" });
-    info.createEl("div", { text: res.name, cls: "title" })
-    info.createEl("div", { text: res.pack, cls: "pack" })
-    info.createEl("div", { text: res.creator, cls: "creator" })
-    //el.createEl("small", { text: book.author });
+  renderSuggestion(res: MoulinetteAssetResult, el: HTMLElement) {
+    res.renderHTML(el)
   }
 
   // Perform action on the selected suggestion.
-  onChooseSuggestion(res: AssetResult, evt: MouseEvent | KeyboardEvent) {
+  onChooseSuggestion(res: MoulinetteAssetResult, evt: MouseEvent | KeyboardEvent) {
     new Notice(`Selected ${res.name}`);
     // Download & insert image
-    if(res.url.startsWith(MoulinetteFileUtils.REMOTE_BASE)) {
-      MoulinetteFileUtils.downloadFile(this.app.vault, res.url).then( (imgPath) => {
+    if(res.url.startsWith(MoulinetteClient.REMOTE_BASE)) {
+      MoulinetteUtils.downloadFile(this.app.vault, res.url).then( (imgPath) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         // Make sure the user is editing a Markdown file.
         if (imgPath && view) {
@@ -91,8 +84,8 @@ export class MoulinetteSearchModal extends SuggestModal<AssetResult> {
       })
     }
     // Download & insert markdown
-    else if(res.url.startsWith(MoulinetteFileUtils.MOULINETTE_BASEURL)) {
-      MoulinetteFileUtils.downloadMarkdown(this.app.vault, res.url).then( (mdText) => {
+    else if(res.url.startsWith(MoulinetteClient.SERVER_URL)) {
+      MoulinetteUtils.downloadMarkdown(this.app.vault, res.url).then( (mdText) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         // Make sure the user is editing a Markdown file.
         if (mdText && view) {

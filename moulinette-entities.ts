@@ -3,20 +3,49 @@
 /**
  * Moulinette asset
  */
-export class MoulinetteAsset {
+export abstract class MoulinetteAsset {
   path: string
+
+  constructor(path) {
+    this.path = path
+  }
 
   static fromDict(obj: object): MoulinetteAsset {
     const asset = new MoulinetteAsset()
     if(typeof obj === "string" || obj instanceof String) {
       asset.path = obj.toString()
-      if(asset.path.endsWith(".webp") || asset.path.endsWith(".md")) {
-      //if(asset.path.endsWith(".md")) {
-        return asset
+      const ext = asset.path.split(".").pop()
+      if(["webp"].includes(ext)) {
+        return new MoulinetteImage(asset.path)
       }
+      else if(["ogg", "mp3"].includes(ext)) {
+        return new MoulinetteSound(asset.path)
+      }
+      else if(["md"].includes(ext)) {
+        return new MoulinetteText(asset.path)
+      }
+    } 
+    // complex type
+    else {
+      asset.path = obj.path
+      if(["ogg", "mp3"].includes(asset.path.split(".").pop())) {
+        const sound = new MoulinetteSound(asset.path)
+        sound.duration = obj.duration
+        return sound
+      } 
     }
     return null
   }
+}
+
+export class MoulinetteImage extends MoulinetteAsset {
+}
+
+export class MoulinetteSound extends MoulinetteAsset {
+  duration: number
+}
+
+export class MoulinetteText extends MoulinetteAsset {
 }
 
 export class MoulinettePack {

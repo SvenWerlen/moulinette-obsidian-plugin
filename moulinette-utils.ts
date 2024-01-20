@@ -1,14 +1,13 @@
+import { MoulinetteClient } from 'moulinette-client';
 import { Vault, normalizePath } from 'obsidian';
 
 /**
  * Moulinette asset
  */
-export class MoulinetteFileUtils {
+export class MoulinetteUtils {
   
   static PREFIX = "/moulinette"
-  static REMOTE_BASE = "https://mttecloudstorage.blob.core.windows.net"
-  static MOULINETTE_BASEURL = "http://127.0.0.1:5000"
-
+  
   /**
    * Improves name (originally a filepath) by replacing separators
    */
@@ -31,13 +30,13 @@ export class MoulinetteFileUtils {
    * @returns image path within the vault
    */
   static async downloadFile(vault: Vault, url: string) {
-    if(!url.startsWith(MoulinetteFileUtils.REMOTE_BASE)) {
+    if(!url.startsWith(MoulinetteClient.REMOTE_BASE)) {
       console.log("Moulinette | URL not supported.", url)
       return null
     }
 
     // create folder structure
-    const imagePath = MoulinetteFileUtils.PREFIX + url.substring(MoulinetteFileUtils.REMOTE_BASE.length, url.lastIndexOf("?"))
+    const imagePath = MoulinetteUtils.PREFIX + url.substring(MoulinetteClient.REMOTE_BASE.length, url.lastIndexOf("?"))
     let folderPath = imagePath.substring(0, imagePath.lastIndexOf("/"))
     if(!(await vault.adapter.exists(normalizePath(folderPath)))) {
       vault.createFolder(folderPath)
@@ -72,7 +71,7 @@ export class MoulinetteFileUtils {
    * @returns markdown content
    */
   static async downloadMarkdown(vault: Vault, url: string) {
-    if(!url.startsWith(MoulinetteFileUtils.MOULINETTE_BASEURL)) {
+    if(!url.startsWith(MoulinetteClient.SERVER_URL)) {
       console.log("Moulinette | URL not supported.", url)
       return null
     }
@@ -93,5 +92,15 @@ export class MoulinetteFileUtils {
     return markdownContent
   }
 
-  
+  /**
+   * Converts a duration into a string representation
+   * @param duration duration as number of seconds
+   * @returns string representation of the duration (65 sec = 1:05)
+   */
+  static formatDuration(duration: number): string {
+    const durHr = Math.floor(duration / (3600))
+    const durMin = Math.floor((duration - 3600*durHr)/60)
+    const durSec = duration % 60
+    return (durHr > 0 ? `${durHr}:${durMin.toString().padStart(2,'0')}` : durMin.toString()) + ":" + durSec.toString().padStart(2,'0')
+  }
 }

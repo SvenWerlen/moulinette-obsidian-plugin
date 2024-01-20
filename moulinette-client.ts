@@ -1,3 +1,5 @@
+import { MoulinetteCreator } from "moulinette-entities";
+
 /**
  * Client for Moulinette server
  */
@@ -7,6 +9,7 @@ export class MoulinetteClient {
   static SERVER_URL = "http://127.0.0.1:5000"
   static HEADERS = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
   static CLIENT_ID = "K3ofcL8XyaObRrO_5VPuzXEPnOVCIW3fbLIt6Vygt_YIM6IKxA404ZQ0pZbZ0VkB"
+  static REMOTE_BASE = "https://mttecloudstorage.blob.core.windows.net"
   
   /*
    * Sends a request to server and returns the response
@@ -36,14 +39,28 @@ export class MoulinetteClient {
 
 
   /** ================================================================ */
+  
   /**
-   * Retrieves linked user if any
+   * Retrieves user details (name, tiers, etc.)
    */
   static async getUser(userId: string, forceRefresh = false) {
     console.log("Moulinette | Retrieving user details")
     const noCache = "?ms=" + new Date().getTime()
     const refresh = forceRefresh ? "force=1" : ""
     return await MoulinetteClient.get(`/user/${userId}${noCache}&${refresh}`)
+  }
+
+  /**
+   * Retrieves user assets (images, markdowns, etc.)
+   */
+  static async getUserAssets(userId: string): Promise<MoulinetteCreator[]> {
+    userId = userId && userId.length == 26 ? userId : "demouser"
+    const result = await MoulinetteClient.get(`/assets/${userId}`)
+    if(result && result.status == 200) {
+      return MoulinetteCreator.importCreators(result.data)
+    } else {
+      return []
+    }
   }
 }
 

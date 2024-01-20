@@ -3,7 +3,6 @@ import { MoulinettePlugin } from "main"
 import { PluginSettingTab } from "obsidian";
 import { randomUUID } from 'crypto';
 import { MoulinetteClient } from 'moulinette-client';
-import { isNull } from 'util';
 
 
 export class MoulinetteSettingTab extends PluginSettingTab {
@@ -32,11 +31,36 @@ export class MoulinetteSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
     containerEl.createEl("h2", { text: "Moulinette Settings"})
+    /*
+    new Setting(containerEl)
+			.setName("Image default size")
+			.setDesc("Specify a size in pixels that Moulinette")
+			.addText(text => text
+				.setPlaceholder('Enter your secret')
+				.setValue(this.plugin.settings.mySetting)
+				.onChange(async (value) => {
+					this.plugin.settings.mySetting = value;
+					await this.plugin.saveSettings();
+				}));*/
+
 
     containerEl.createEl("h2", { text: "Moulinette Cloud integration"})
 
-    const authSett = containerEl.createDiv({cls: "setting-item"})
-    this.refreshCloudIntegration(authSett)
+    this.refreshCloudIntegration(containerEl.createDiv({cls: "setting-item"}))
+
+    const refreshSetting = containerEl.createDiv({cls: "setting-item"})
+    const authInfo = refreshSetting.createDiv({cls: "setting-item-info"})
+    authInfo.createDiv({cls: "setting-item-name", text: `Refresh assets`})
+    authInfo.createDiv({cls: "setting-item-description", text: "The list of assets you have access to is cached. Click the 'Refresh' button to force a data refresh without the need to restart Obsidian."})
+    const actions = refreshSetting.createDiv({cls: "setting-item-control"}).createDiv("actions")
+    const refreshButton = new ButtonComponent(actions)
+      .setButtonText("Refresh")
+      .onClick(async () => {
+        refreshButton.setButtonText("✓ refreshed!")
+        refreshButton.setDisabled(true)
+        refreshButton.setClass("success")
+        this.plugin.clearCache()
+    })
 	}
 
 
@@ -75,6 +99,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
           new ButtonComponent(actions)
             .setButtonText("Refresh tiers")
             .onClick(async () => {
+              this.plugin.clearCache()
               this.refreshCloudIntegration(settingDIV, true)
             })
           new ButtonComponent(actions)
@@ -82,6 +107,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
             .onClick(async () => {
               this.plugin.settings.sessionID = ''
               await this.plugin.saveSettings();
+              this.plugin.clearCache()
               this.refreshCloudIntegration(settingDIV)
             })
         } else {
@@ -97,12 +123,14 @@ export class MoulinetteSettingTab extends PluginSettingTab {
           new ButtonComponent(actions)
             .setButtonText("Refresh tiers")
             .onClick(async () => {
+              this.plugin.clearCache()
               this.refreshCloudIntegration(settingDIV, true)
             })
           new ButtonComponent(actions)
             .setButtonText("Logout")
             .onClick(async () => {
               this.plugin.settings.sessionID = ''
+              this.plugin.clearCache()
               await this.plugin.saveSettings();
               this.refreshCloudIntegration(settingDIV)
             })

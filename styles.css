@@ -9,11 +9,13 @@ If your plugin does not need CSS, delete this file.
 
 .asset {
   display: flex;
+  position: relative;
 }
 
 .asset img {
   width: 100px;
-  height: 100px;
+  min-width: 100px;
+  height: 75px;
   object-fit: scale-down;
 }
 
@@ -22,7 +24,7 @@ If your plugin does not need CSS, delete this file.
   font-weight: bold;
 }
 
-.asset .pack, .asset .creator {
+.asset .pack, .asset .meta {
   font-size: small;
 }
 
@@ -37,4 +39,15 @@ If your plugin does not need CSS, delete this file.
 
 .actions button {
   margin: 3px;
+}
+
+.success {
+  color: green;
+}
+
+.duration {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  font-size: small;
 }
