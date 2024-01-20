@@ -48,7 +48,7 @@ export class MoulinetteSearchModal extends SuggestModal<AssetResult> {
               url = `${p.path}/${a.path}?${p.sas ? p.sas : ""}`
               thumb = `${p.path}/${a.path.split('.').slice(0, -1).join('.')}_thumb.webp?${p.sas ? p.sas : ""}`
             } else if(a.path.endsWith(".md")) {
-              url = `${MoulinetteFileUtils.MOULINETTE_BASEURL}/assets/download/YgDeJIhUG6Gjdxhz9Z3fkSeQpT/7057?file=${a.path}`
+              url = `${MoulinetteFileUtils.MOULINETTE_BASEURL}/assets/download/8c9e0b6b50694fd5a23090a59b/7057?file=${a.path}`
               thumb = "#MD"
             } else {
               continue

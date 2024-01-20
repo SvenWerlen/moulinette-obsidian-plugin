@@ -24,6 +24,7 @@ export class MoulinettePack {
   name: string
   path: string
   sas: string
+  packId: string
   assets: [MoulinetteAsset]
 
   static fromDict(obj: object): MoulinettePack {
@@ -36,6 +37,9 @@ export class MoulinettePack {
     }
     if(obj.path) {
       pack.path = obj.path
+      if(obj.path.endsWith(".git")) {
+        pack.packId = obj.path.split('/').pop().slice(0, -4);
+      }
     }
     if(obj.sas) {
       pack.sas = obj.sas

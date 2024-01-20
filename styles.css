@@ -29,3 +29,12 @@ If your plugin does not need CSS, delete this file.
 .asset .info {
   margin-left: 10px;
 }
+
+.setting-warning {
+  display: none;
+  color: red;
+}
+
+.actions button {
+  margin: 3px;
+}
