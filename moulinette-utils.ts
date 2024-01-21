@@ -88,7 +88,8 @@ export class MoulinetteUtils {
    */
   static async downloadMarkdown(plugin: MoulinettePlugin, uri: string) {
     let markdownContent = ""
-    await MoulinetteClient.fetch(uri, "get", null)
+    const sessionId = plugin.settings.sessionID ? plugin.settings.sessionID : "demo-user"
+    await MoulinetteClient.fetch(uri.replace("SESSIONID", sessionId), "get", null)
       .then(response => {
         if (!response) { throw new Error(`Error during request`) }
         if (!response.ok) { throw new Error(`HTTP ${response.status} - ${response.statusText}`) }
@@ -117,32 +118,53 @@ export class MoulinetteUtils {
     const matches = markdown.matchAll(/(\!?)\[\[([^\]]+)\]\]/g)
     for (const match of matches) {
       const refMark = match[1]
-      const assetPath = match[2]
-      const packId = assetPath.split("/")[0]
-      // look for a matching pack
+      let assetPath = match[2]
+
       const creators = await plugin.getCreators()
-			for(const c of creators) {
-				const pack = c.packs.find(p => p.packId == packId)
-				if(pack) {
-          let path = null
-          // download embeded assets
-          if(refMark == "!") {
-            const sessionId = plugin.settings.sessionID ? plugin.settings.sessionID : "demo-user"
-            const url = `${MoulinetteClient.SERVER_URL}/assets/download/${sessionId}/${pack.id}?file=${assetPath}`
-            path = await MoulinetteUtils.downloadFile(plugin.app.vault, url)
+      // A) reference is external (starts with moulinette/)
+      if(assetPath.startsWith(MoulinetteUtils.PREFIX)) {
+        assetPath = assetPath.substring(MoulinetteUtils.PREFIX.length)
+        const creatorPath = assetPath.split("/")[0]
+        const pack = assetPath.split("/")[1]
+        const baseURL = `${creatorPath}/${pack}`
+        for(const c of creators) {
+          const pack = c.packs.find(p => p.path.endsWith(baseURL))
+          if(pack) {
+            if(refMark == "!") {
+              // download asset (from Azure Storage)
+              const url = `${pack.path}${assetPath.replace(baseURL, "")}?${pack.sas ? pack.sas : ""}`
+              await MoulinetteUtils.downloadFile(plugin.app.vault, url)
+            }
           }
-          // don't download pages automatically
-          else {
-            path = MoulinetteUtils.PREFIX + ( assetPath.startsWith("/") ? assetPath.substring(1) : assetPath )
+        }
+      }
+      // B) reference is specific to a Markdown pack (starts with <module-id>/)
+      else {
+        const packId = assetPath.split("/")[0]
+        for(const c of creators) {
+          const pack = c.packs.find(p => p.packId == packId)
+          if(pack) {
+            let path = null
+            
+            // download embeded assets (from GIT)
+            if(refMark == "!") {
+              const sessionId = plugin.settings.sessionID ? plugin.settings.sessionID : "demo-user"
+              const url = `${MoulinetteClient.SERVER_URL}/assets/download/${sessionId}/${pack.id}?file=${assetPath}`
+              path = await MoulinetteUtils.downloadFile(plugin.app.vault, url)
+            }
+            // don't download pages automatically (add prefix in from of reference)
+            else {
+              path = MoulinetteUtils.PREFIX + ( assetPath.startsWith("/") ? assetPath.substring(1) : assetPath )
+            }
+            
+            if(path) {
+              // replace references
+              newMarkdown = newMarkdown.replace(match[0], `${refMark}[[${path}]]`)
+              break
+            }
           }
-          
-          if(path) {
-            // replace references
-            newMarkdown = newMarkdown.replace(match[0], `${refMark}[[${path}]]`)
-            break
-          }
-				}
-			}
+        }
+      }
     }
     return newMarkdown
   }

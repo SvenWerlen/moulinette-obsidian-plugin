@@ -26,13 +26,20 @@ export abstract class MoulinetteAsset {
       }
     } 
     // complex type
-    else {
-      asset.path = obj.path
-      if(["ogg", "mp3"].includes(asset.path.split(".").pop())) {
-        const sound = new MoulinetteSound(asset.path)
-        sound.duration = obj.duration
-        return sound
-      } 
+    else if(["snd", "md"].includes(obj.type) && obj.path) {
+      switch(obj.type) {
+        case "snd":
+          const sound = new MoulinetteSound(obj.path)
+          sound.duration = obj.duration
+          return sound
+        case "md":
+          const markdown = new MoulinetteText(obj.path)
+          if(obj.meta && obj.meta.description) markdown.description = obj.meta.description
+          if(obj.meta && obj.meta.type) markdown.type = obj.meta.type
+          if(obj.meta && obj.meta.subtype) markdown.subtype = obj.meta.subtype
+          console.log(markdown)
+          return markdown
+      }
     }
     return null
   }
@@ -46,6 +53,9 @@ export class MoulinetteSound extends MoulinetteAsset {
 }
 
 export class MoulinetteText extends MoulinetteAsset {
+  description: string
+  type: string
+  subtype: string
 }
 
 export class MoulinettePack {
@@ -98,7 +108,10 @@ export class MoulinetteCreator {
     if(obj.packs) {
       creator.packs = []
       for(const p of obj.packs) {
-        creator.packs.push(MoulinettePack.fromDict(p))
+        const pack = MoulinettePack.fromDict(p)
+        if(pack.assets.length > 0) {
+          creator.packs.push(pack)
+        }
       }
     }
     return creator
@@ -108,7 +121,10 @@ export class MoulinetteCreator {
     if(!obj) return []
     const creators = []
     for(const c of obj) {
-      creators.push(MoulinetteCreator.fromDict(c))
+      const creator = MoulinetteCreator.fromDict(c)
+      if(creator.packs.length > 0) {
+        creators.push(creator)
+      }
     }
     return creators
   }

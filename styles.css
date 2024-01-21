@@ -24,12 +24,69 @@ If your plugin does not need CSS, delete this file.
   font-weight: bold;
 }
 
-.asset .pack, .asset .meta {
+.asset .pack {
   font-size: small;
+}
+
+.asset .desc {
+  font-size: small;
+  font-style: italic;
 }
 
 .asset .info {
   margin-left: 10px;
+  width: 100%;
+}
+
+.meta {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.meta .tag {
+  background-color: #e87209;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 4px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-size: small;
+  padding: 1px 5px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  margin-left: 3px;
+}
+
+.button-3:focus:not(:focus-visible):not(.focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+.button-3:hover {
+  background-color: #2c974b;
+}
+
+.button-3:focus {
+  box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+  outline: none;
+}
+
+.button-3:disabled {
+  background-color: #94d3a2;
+  border-color: rgba(27, 31, 35, .1);
+  color: rgba(255, 255, 255, .8);
+  cursor: default;
+}
+
+.button-3:active {
+  background-color: #298e46;
+  box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+}
 }
 
 .setting-warning {
