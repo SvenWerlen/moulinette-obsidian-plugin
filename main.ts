@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile } from 'obsidian';
 import { MoulinetteSearchModal } from 'moulinette-search';
 import { MoulinetteAsset, MoulinetteCreator, MoulinettePack } from 'moulinette-entities';
 import { MoulinetteUtils } from 'moulinette-utils';
@@ -27,37 +27,7 @@ export default class MoulinettePlugin extends Plugin {
 		await this.getCreators()
 
 		this.registerEvent(this.app.vault.on('create', async (file) => {
-			if(file.name.endsWith(".md")) {
-				//this.app.vault.rename(file, file.path.substring(0, file.path.length - 3) + "OK.md")
-				const packId = file.path.split("/")[0]
-				// look for a matching pack
-				const creators = await this.getCreators()
-				for(const c of creators) {
-					const pack = c.packs.find(p => p.packId == packId)
-					if(pack) {
-						console.log("Pack found : ", pack)
-						const md = `${file.path}.md`
-						const a = pack.assets.find((a) => a.path == file.path || a.path == md)
-						if(a) {
-							//const url = `${pack.path}/${a.path}?${pack.sas ? pack.sas : ""}`
-							const url = `${MoulinetteUtils.MOULINETTE_BASEURL}/assets/download/8c9e0b6b50694fd5a23090a59b/${pack.id}?file=${a.path}`
-							MoulinetteUtils.downloadMarkdown(this.app.vault, url).then( (mdText) => {
-								const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-								// Make sure the user is editing a Markdown file.
-								if (mdText && view) {
-									view.editor.replaceSelection(mdText)
-								}
-							})
-
-							break
-						} else {
-							console.log("Asset not found : ", md)
-						}
-					}
-				}
-			}      
-
-			return false
+			this.downloadPage(file)
     }));
 
 		// This creates an icon in the left ribbon.
@@ -69,7 +39,7 @@ export default class MoulinettePlugin extends Plugin {
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
 
-		// 
+		
 		this.addCommand({
 			id: 'moulinette-clear-cache',
 			name: 'Clear cache',
@@ -79,11 +49,25 @@ export default class MoulinettePlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: 'moulinette-reload-page',
+			name: 'Re-download page',
+			callback: () => {
+				const curView = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if(curView && curView.file) {
+					const lastline = curView.editor.lastLine();
+					const lastCh = curView.editor.getLine(lastline).length;
+					curView.editor.setSelection({ line: 0, ch: 0 }, { line: lastline, ch: lastCh });
+					this.downloadPage(curView.file)
+				}
+			}
+		});
+
+		this.addCommand({
 			id: 'moulinette-search',
 			name: 'Search on Moulinette Cloud',
 			hotkeys: [{ key: 'M', modifiers: ['Ctrl']}],
 			callback: () => {
-				this.getCreators().then((creators) => new MoulinetteSearchModal(this.app, creators).open())
+				this.getCreators().then((creators) => new MoulinetteSearchModal(this, creators).open())
 			},
 		});
 
@@ -126,5 +110,37 @@ export default class MoulinettePlugin extends Plugin {
 		this.creators = []
 		this.creatorsDate = 0
 		new Notice('Moulinette Cache cleared!');
+	}
+
+	/**
+	 * download file from server (if exists)
+	 */
+	async downloadPage(file: TAbstractFile) {
+		if(file.name.endsWith(".md") && file.path.startsWith(MoulinetteUtils.PREFIX)) {
+			const packId = file.path.split("/")[1]
+			// look for a matching pack
+			const creators = await this.getCreators()
+			for(const c of creators) {
+				const pack = c.packs.find(p => p.packId == packId)
+				const filepath = file.path.replace(MoulinetteUtils.PREFIX, "")
+				if(pack) {
+					const a = pack.assets.find((a) => a.path == filepath)
+					if(a) {
+						const sessionId = this.settings.sessionID ? this.settings.sessionID : "demo-user"
+						const url = `/assets/download/${sessionId}/${pack.id}?file=${a.path}`
+						MoulinetteUtils.downloadMarkdown(this, url).then( (mdText) => {
+							const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+							// Make sure the user is editing a Markdown file.
+							if (mdText && view) {
+								view.editor.replaceSelection(mdText)
+							}
+						})
+						break
+					} else {
+						new Notice(`No Moulinette match found for ${file.name}!`);
+					}
+				}
+			}
+		}      
 	}
 }

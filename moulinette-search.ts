@@ -1,3 +1,4 @@
+import MoulinettePlugin from "main";
 import { MoulinetteClient } from "moulinette-client";
 import { MoulinetteCreator, MoulinetteImage, MoulinetteSound, MoulinetteText } from "moulinette-entities";
 import { MoulinetteAssetResult } from "moulinette-results";
@@ -7,19 +8,18 @@ import { App, MarkdownView, Notice, SuggestModal } from "obsidian";
 
 export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
 
-  static MAX_RESULTS = 20
+  static MAX_RESULTS = 100
   static ASSET_TYPE_ANY    = 0
   static ASSET_TYPE_IMAGES = 1 // "!i"
   static ASSET_TYPE_SOUNDS = 2 // "!s"
   static ASSET_TYPE_TEXT   = 3 // "!t"
   
-  // https://upload.wikimedia.org/wikipedia/commons/4/48/Markdown-mark.svg
-  // https://yoksel.github.io/url-encoder/
+  plugin: MoulinettePlugin
   creators: MoulinetteCreator[];
 
-  constructor(app: App, creators: MoulinetteCreator[]) {
-    super(app);
-    this.app = app
+  constructor(plugin: MoulinettePlugin, creators: MoulinetteCreator[]) {
+    super(plugin.app);
+    this.plugin = plugin
     this.creators = creators
   }
 
@@ -75,8 +75,8 @@ export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
     new Notice(`Selected ${res.name}`);
     // Download & insert image
     if(res.url.startsWith(MoulinetteClient.REMOTE_BASE)) {
-      MoulinetteUtils.downloadFile(this.app.vault, res.url).then( (imgPath) => {
-        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      MoulinetteUtils.downloadFile(this.plugin.app.vault, res.url).then( (imgPath) => {
+        const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
         // Make sure the user is editing a Markdown file.
         if (imgPath && view) {
           view.editor.replaceSelection(`![[${imgPath}]]`)
@@ -84,8 +84,8 @@ export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
       })
     }
     // Download & insert markdown
-    else if(res.url.startsWith(MoulinetteClient.SERVER_URL)) {
-      MoulinetteUtils.downloadMarkdown(this.app.vault, res.url).then( (mdText) => {
+    else {
+      MoulinetteUtils.downloadMarkdown(this.plugin, res.url).then( (mdText) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         // Make sure the user is editing a Markdown file.
         if (mdText && view) {

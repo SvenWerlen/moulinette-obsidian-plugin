@@ -1,4 +1,6 @@
+import MoulinettePlugin from 'main';
 import { MoulinetteClient } from 'moulinette-client';
+import { MoulinetteCreator } from 'moulinette-entities';
 import { Vault, normalizePath } from 'obsidian';
 
 /**
@@ -6,7 +8,7 @@ import { Vault, normalizePath } from 'obsidian';
  */
 export class MoulinetteUtils {
   
-  static PREFIX = "/moulinette"
+  static PREFIX = "moulinette/"
   
   /**
    * Improves name (originally a filepath) by replacing separators
@@ -30,14 +32,27 @@ export class MoulinetteUtils {
    * @returns image path within the vault
    */
   static async downloadFile(vault: Vault, url: string) {
-    if(!url.startsWith(MoulinetteClient.REMOTE_BASE)) {
-      console.log("Moulinette | URL not supported.", url)
-      return null
+    
+    let imagePath = url
+
+    // URL for Azure
+    if(url.startsWith(MoulinetteClient.REMOTE_BASE)) {
+      imagePath = MoulinetteUtils.PREFIX + url.substring(MoulinetteClient.REMOTE_BASE.length + 1, url.lastIndexOf("?"))
+    } 
+    // URL for moulinette.cloud
+    else if(url.startsWith(MoulinetteClient.SERVER_URL)) {
+      const idx = url.lastIndexOf("?file=")
+      if(idx > 0) {
+        imagePath = MoulinetteUtils.PREFIX + url.split("?file=")[1]
+      } else {
+        console.log("Invalid URL", url)
+        return null
+      }
     }
 
+    const folderPath = imagePath.substring(0, imagePath.lastIndexOf("/"))  
+
     // create folder structure
-    const imagePath = MoulinetteUtils.PREFIX + url.substring(MoulinetteClient.REMOTE_BASE.length, url.lastIndexOf("?"))
-    let folderPath = imagePath.substring(0, imagePath.lastIndexOf("/"))
     if(!(await vault.adapter.exists(normalizePath(folderPath)))) {
       vault.createFolder(folderPath)
     }
@@ -66,19 +81,16 @@ export class MoulinetteUtils {
   /**
    * This utility function downloads a markdown content (from Moulinette Cloud)
    * 
-   * @param vault current Vault
-   * @param url Markdown URL
+   * @param vault current vault
+   * @param creators cached creators
+   * @param url markdown URL
    * @returns markdown content
    */
-  static async downloadMarkdown(vault: Vault, url: string) {
-    if(!url.startsWith(MoulinetteClient.SERVER_URL)) {
-      console.log("Moulinette | URL not supported.", url)
-      return null
-    }
-
+  static async downloadMarkdown(plugin: MoulinettePlugin, uri: string) {
     let markdownContent = ""
-    await fetch(url)
+    await MoulinetteClient.fetch(uri, "get", null)
       .then(response => {
+        if (!response) { throw new Error(`Error during request`) }
         if (!response.ok) { throw new Error(`HTTP ${response.status} - ${response.statusText}`) }
         return response.text();
       })
@@ -89,7 +101,50 @@ export class MoulinetteUtils {
       console.error("Moulinette | Couldn't download the markdown!", err)
     });
     
-    return markdownContent
+    return await MoulinetteUtils.downloadDependencies(plugin, markdownContent)
+  }
+
+  /**
+   * Checks the entire markdown content for references ![[some URL]]
+   * Download the references if exist on Moulinette
+   * 
+   * @param vault current vault
+   * @param creators  cached creators
+   * @param markdown markdown content
+   */
+  static async downloadDependencies(plugin: MoulinettePlugin, markdown: string): Promise<string> {
+    let newMarkdown = markdown
+    const matches = markdown.matchAll(/(\!?)\[\[([^\]]+)\]\]/g)
+    for (const match of matches) {
+      const refMark = match[1]
+      const assetPath = match[2]
+      const packId = assetPath.split("/")[0]
+      // look for a matching pack
+      const creators = await plugin.getCreators()
+			for(const c of creators) {
+				const pack = c.packs.find(p => p.packId == packId)
+				if(pack) {
+          let path = null
+          // download embeded assets
+          if(refMark == "!") {
+            const sessionId = plugin.settings.sessionID ? plugin.settings.sessionID : "demo-user"
+            const url = `${MoulinetteClient.SERVER_URL}/assets/download/${sessionId}/${pack.id}?file=${assetPath}`
+            path = await MoulinetteUtils.downloadFile(plugin.app.vault, url)
+          }
+          // don't download pages automatically
+          else {
+            path = MoulinetteUtils.PREFIX + ( assetPath.startsWith("/") ? assetPath.substring(1) : assetPath )
+          }
+          
+          if(path) {
+            // replace references
+            newMarkdown = newMarkdown.replace(match[0], `${refMark}[[${path}]]`)
+            break
+          }
+				}
+			}
+    }
+    return newMarkdown
   }
 
   /**
