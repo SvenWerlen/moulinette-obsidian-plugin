@@ -9,6 +9,13 @@ This plugin implements integration with Moulinette Cloud, providing the followin
 The content is provided by your beloved communities and creators, encompassing both free offerings and premium assets for those who choose to support them.
 Visit [Moulinette Marketplace](https://assets.moulinette.cloud/marketplace/creators) to browse available content.
 
+# First steps
+
+* Install the plugin (see instructions below)
+* Press `CTRL+M` to open Moulinette search
+* Use `!i` to search for images, `!s` for sounds, `!t` for texts (ie. notes)
+* See [Moulinette Obsidian Demo](https://github.com/SvenWerlen/moulinette-obsidian-demo) repository for examples you can search and play with.
+
 # How to install the plugin
 
 * Download the [latest release](https://github.com/SvenWerlen/moulinette-obsidian-plugin/releases)
@@ -24,3 +31,7 @@ Your Vault/
             manifest.json
             styles.css
 ```
+
+* Restart Obsidian
+* Enable the module
+* Enjoy!
