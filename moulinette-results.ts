@@ -36,7 +36,7 @@ export class MoulinetteAssetResult {
       res.url = `${p.path}/${a.path}?${p.sas ? p.sas : ""}`
     }
     else if(a instanceof MoulinetteText) {
-      res.url = `/assets/download/SESSIONID/${p.id}?file=${a.path}`
+      res.url = `/assets/download-asset/SESSIONID/${p.id}?file=${a.path}&ms=${new Date().getTime()}`
     } else {
       return null
     }

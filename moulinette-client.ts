@@ -5,8 +5,8 @@ import { MoulinetteCreator } from "moulinette-entities";
  */
 export class MoulinetteClient {
   
-  //static SERVER_URL = "https://assets.moulinette.cloud"
-  static SERVER_URL = "http://127.0.0.1:5000"
+  static SERVER_URL = "https://assets.moulinette.cloud"
+  //static SERVER_URL = "http://127.0.0.1:5000"
   static HEADERS = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
   static CLIENT_ID = "K3ofcL8XyaObRrO_5VPuzXEPnOVCIW3fbLIt6Vygt_YIM6IKxA404ZQ0pZbZ0VkB"
   static REMOTE_BASE = "https://mttecloudstorage.blob.core.windows.net"

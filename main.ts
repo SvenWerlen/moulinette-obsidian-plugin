@@ -127,7 +127,7 @@ export default class MoulinettePlugin extends Plugin {
 					const a = pack.assets.find((a) => a.path == filepath)
 					if(a) {
 						const sessionId = this.settings.sessionID ? this.settings.sessionID : "demo-user"
-						const url = `/assets/download/${sessionId}/${pack.id}?file=${a.path}`
+						const url = `/assets/download-asset/${sessionId}/${pack.id}?file=${a.path}&ms=${new Date().getTime()}`
 						MoulinetteUtils.downloadMarkdown(this, url).then( (mdText) => {
 							const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 							// Make sure the user is editing a Markdown file.

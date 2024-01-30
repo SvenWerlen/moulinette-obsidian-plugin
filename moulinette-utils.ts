@@ -143,19 +143,22 @@ export class MoulinetteUtils {
         const packId = assetPath.split("/")[0]
         for(const c of creators) {
           const pack = c.packs.find(p => p.packId == packId)
+          console.log(pack)
           if(pack) {
             let path = null
             
-            // download embeded assets (from GIT)
+            // download embeded assets (from GIT) 
             if(refMark == "!") {
               const sessionId = plugin.settings.sessionID ? plugin.settings.sessionID : "demo-user"
-              const url = `${MoulinetteClient.SERVER_URL}/assets/download/${sessionId}/${pack.id}?file=${assetPath}`
+              const url = `${MoulinetteClient.SERVER_URL}/assets/download-asset/${sessionId}/${pack.id}?file=${assetPath}&ms=${new Date().getTime()}`
               path = await MoulinetteUtils.downloadFile(plugin.app.vault, url)
             }
             // don't download pages automatically (add prefix in from of reference)
             else {
               path = MoulinetteUtils.PREFIX + ( assetPath.startsWith("/") ? assetPath.substring(1) : assetPath )
             }
+
+            console.log(path) 
             
             if(path) {
               // replace references

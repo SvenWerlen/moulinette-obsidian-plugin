@@ -37,7 +37,6 @@ export abstract class MoulinetteAsset {
           if(obj.meta && obj.meta.description) markdown.description = obj.meta.description
           if(obj.meta && obj.meta.type) markdown.type = obj.meta.type
           if(obj.meta && obj.meta.subtype) markdown.subtype = obj.meta.subtype
-          console.log(markdown)
           return markdown
       }
     }
