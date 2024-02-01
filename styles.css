@@ -108,3 +108,44 @@ If your plugin does not need CSS, delete this file.
   bottom: 0px;
   font-size: small;
 }
+
+.browser {
+  height: 80%;
+  max-height: 1200px;
+  width: 880px;
+}
+
+.browser .searchbar {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+.browser select {
+  margin: 0px 8px;
+  max-width: 200px;
+}
+
+.browser .assets {
+  position: absolute;
+  top: 55px;
+  left: 15px;
+  bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  overflow: scroll;
+}
+
+.browser .assets img {
+  width: 100px;
+  height: 100px;
+  object-fit: scale-down;
+  border: none;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.browser .assets img:hover {
+  opacity: 30%;
+}
