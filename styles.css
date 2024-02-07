@@ -116,10 +116,27 @@ If your plugin does not need CSS, delete this file.
 }
 
 .browser .searchbar {
+  display: flex;
   position: absolute;
   top: 15px;
   left: 15px;
 }
+
+.browser .searchbar button {
+  margin-left: 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.browser .searchbar button.highlight {
+  border: 1px solid #e87209;
+  ;
+}
+
+.browser .searchbar button img {
+  width: 22px;
+}
+
 
 .browser select {
   margin: 0px 8px;
@@ -137,15 +154,47 @@ If your plugin does not need CSS, delete this file.
   overflow: scroll;
 }
 
+.browser .assets > * {
+  position: relative;
+  cursor: pointer;
+  border: 1px solid transparent;
+  overflow: hidden;
+}
+
+.browser .assets > *:hover {
+  cursor: pointer;
+  border: 1px dashed #e87209;
+  border-radius: 4px;
+  opacity: 75%;
+}
+
 .browser .assets img {
   width: 100px;
   height: 100px;
   object-fit: scale-down;
   border: none;
   margin: 2px;
-  cursor: pointer;
 }
 
-.browser .assets img:hover {
-  opacity: 30%;
+.browser .assets .md, .browser .assets .snd {
+  width: 100px;
+  height: 100px;
+  padding: 3px;
+}
+
+.browser .assets .snd .dur {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 10px;
+  font-style: italic;
+}
+
+.browser .assets .md img, .browser .assets .snd img {
+  width: 24px;
+  height: 24px;
+}
+
+.browser .assets .md div, .browser .assets .snd div {
+  font-size: 12px;
 }

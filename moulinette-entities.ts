@@ -6,8 +6,21 @@
 export abstract class MoulinetteAsset {
   path: string
 
+  static TYPE_NONE  = 0
+  static TYPE_IMAGE = 1
+  static TYPE_AUDIO = 2
+  static TYPE_TEXT  = 3
+
   constructor(path) {
     this.path = path
+  }
+
+  getUrl(pack: MoulinettePack): string {
+    return `${pack.path}/${this.path}?${pack.sas ? pack.sas : ""}`
+  }
+
+  getType(): number {
+    return MoulinetteAsset.TYPE_NONE
   }
 
   static fromDict(obj: object): MoulinetteAsset {
@@ -45,16 +58,23 @@ export abstract class MoulinetteAsset {
 }
 
 export class MoulinetteImage extends MoulinetteAsset {
+  getType(): number { return MoulinetteAsset.TYPE_IMAGE }
 }
 
 export class MoulinetteSound extends MoulinetteAsset {
   duration: number
+  getType(): number { return MoulinetteAsset.TYPE_AUDIO }
 }
 
 export class MoulinetteText extends MoulinetteAsset {
   description: string
   type: string
   subtype: string
+  
+  getType(): number { return MoulinetteAsset.TYPE_TEXT }
+  getUrl(pack: MoulinettePack): string {
+    return `/assets/download-asset/SESSIONID/${pack.id}?file=${this.path}&ms=${new Date().getTime()}`
+  }
 }
 
 export class MoulinettePack {
@@ -63,7 +83,7 @@ export class MoulinettePack {
   path: string
   sas: string
   packId: string
-  assets: [MoulinetteAsset]
+  assets: MoulinetteAsset[]
 
   static fromDict(obj: object): MoulinettePack {
     const pack = new MoulinettePack()
@@ -97,7 +117,7 @@ export class MoulinettePack {
 
 export class MoulinetteCreator {
   name: string
-  packs: [MoulinettePack]
+  packs: MoulinettePack[]
 
   static fromDict(obj: object): MoulinetteCreator {
     const creator = new MoulinetteCreator()

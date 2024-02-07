@@ -32,9 +32,17 @@ export default class MoulinettePlugin extends Plugin {
 		}));
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('hammer', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			this.getCreators().then((creators) => new MoulinetteBrowser(this.app, creators).open())
+		this.addRibbonIcon('hammer', 'Moulinette Browser', (evt: MouseEvent) => {
+			this.getCreators().then((creators) => new MoulinetteBrowser(this, creators).open())
+		});
+
+		this.addCommand({
+			id: 'moulinette-browser',
+			name: 'Moulinette Browser',
+			hotkeys: [{ key: 'M', modifiers: ['Ctrl', 'Shift'] }],
+			callback: () => {
+				this.getCreators().then((creators) => new MoulinetteBrowser(this, creators).open())
+			}
 		});
 
 		this.addCommand({
