@@ -4,7 +4,7 @@ import { MoulinetteAsset, MoulinetteCreator, MoulinettePack } from 'moulinette-e
 import { MoulinetteUtils } from 'moulinette-utils';
 import { MoulinetteSettingTab } from 'moulinette-settings';
 import { MoulinetteClient } from 'moulinette-client';
-import { MoulinetteBrowser } from 'moulinette-browser';
+import { MoulinetteBrowser, MoulinetteBrowserFilters } from 'moulinette-browser';
 
 
 interface MoulinetteSettings {
@@ -20,12 +20,15 @@ export default class MoulinettePlugin extends Plugin {
 	static CACHE_TIMEOUT = 1000 * 60 * 60 * 23 		// cache must be refreshed before 24 hours
 
 	settings: MoulinetteSettings;
-	creators: MoulinetteCreator[];	// asset list (in cache)
-	creatorsDate: number;           // date when assets have been downloaded
+	creators: MoulinetteCreator[];	        // asset list (in cache)
+	creatorsDate: number;                   // date when assets have been downloaded
+	lastFilters: MoulinetteBrowserFilters;  // last-used filters
 
 	async onload() {
 		await this.loadSettings();
 		await this.getCreators()
+
+		this.lastFilters = new MoulinetteBrowserFilters()
 
 		this.registerEvent(this.app.vault.on('create', async (file) => {
 			this.downloadPage(file)
@@ -33,7 +36,7 @@ export default class MoulinettePlugin extends Plugin {
 
 		// This creates an icon in the left ribbon.
 		this.addRibbonIcon('hammer', 'Moulinette Browser', (evt: MouseEvent) => {
-			this.getCreators().then((creators) => new MoulinetteBrowser(this, creators).open())
+			this.getCreators().then((creators) => new MoulinetteBrowser(this, creators, this.lastFilters).open())
 		});
 
 		this.addCommand({
@@ -41,7 +44,7 @@ export default class MoulinettePlugin extends Plugin {
 			name: 'Moulinette Browser',
 			hotkeys: [{ key: 'M', modifiers: ['Ctrl', 'Shift'] }],
 			callback: () => {
-				this.getCreators().then((creators) => new MoulinetteBrowser(this, creators).open())
+				this.getCreators().then((creators) => new MoulinetteBrowser(this, creators, this.lastFilters).open())
 			}
 		});
 

@@ -3,7 +3,7 @@ import { MoulinetteClient } from "moulinette-client";
 import { MoulinetteAsset, MoulinetteCreator, MoulinetteImage, MoulinetteSound, MoulinetteText } from "moulinette-entities";
 import { MoulinetteAssetResult } from "moulinette-results";
 import { MoulinetteUtils } from "moulinette-utils";
-import { App, MarkdownView, Notice, SuggestModal } from "obsidian";
+import { MarkdownView, SuggestModal } from "obsidian";
 
 interface FilterTag {
   id: string
@@ -118,7 +118,6 @@ export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
 
   // Perform action on the selected suggestion.
   onChooseSuggestion(res: MoulinetteAssetResult, evt: MouseEvent | KeyboardEvent) {
-    new Notice(`Selected ${res.name}`);
     // Download & insert image
     if(res.url.startsWith(MoulinetteClient.REMOTE_BASE)) {
       MoulinetteUtils.downloadFile(this.plugin.app.vault, res.url).then( (imgPath) => {

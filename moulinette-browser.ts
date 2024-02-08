@@ -1,9 +1,15 @@
 import Fuse from 'fuse.js'
 import MoulinettePlugin from 'main';
 import { MoulinetteAsset, MoulinetteCreator, MoulinetteImage, MoulinettePack, MoulinetteSound, MoulinetteText } from "moulinette-entities";
-import { MoulinetteAssetResult } from 'moulinette-results';
 import { MoulinetteUtils } from "moulinette-utils";
-import { App, MarkdownView, Modal, Notice } from "obsidian";
+import { App, MarkdownView, Modal, Notice, setIcon } from "obsidian";
+
+export class MoulinetteBrowserFilters {
+  creator: number = -1
+  packs: number[] = []
+  type: number = 0
+  terms: string = ''
+}
 
 export class MoulinetteBrowser extends Modal {
   
@@ -11,19 +17,17 @@ export class MoulinetteBrowser extends Modal {
   static SEARCH_DELAY = 600
 
   plugin: MoulinettePlugin
-  creators: MoulinetteCreator[] // list of all creators
-  selCreator: number            // selected creator (combo)
-  selPack: number               // selected pack (combo)
-  selType: number               // selected type
-  searchEl: HTMLInputElement    // HTML div for search (input)
-  assetsEl: HTMLElement         // HTML div for rendering assets
-  ignoreScroll: boolean         // flag to ignore scroll
-  page: number                  // rendered page (pagination)
+  creators: MoulinetteCreator[]     // list of all creators
+  filters: MoulinetteBrowserFilters 
+  assetsEl: HTMLElement             // HTML div for rendering assets
+  ignoreScroll: boolean             // flag to ignore scroll
+  page: number                      // rendered page (pagination)
   
-  constructor(plugin: MoulinettePlugin, creators: MoulinetteCreator[]) {
+  constructor(plugin: MoulinettePlugin, creators: MoulinetteCreator[], filters: MoulinetteBrowserFilters) {
     super(plugin.app);
     this.plugin = plugin
     this.creators = creators.sort((a,b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
+    this.filters = filters ? filters : new MoulinetteBrowserFilters()
   }
 
   onOpen() {
@@ -32,46 +36,45 @@ export class MoulinetteBrowser extends Modal {
     
     //contentEl.createEl("h3", { text: "Moulinette Browser" });
     const headerEl = contentEl.createEl("div", { cls: "searchbar" });
-    this.searchEl = headerEl.createEl("input", { value: "", placeholder: "Search ..."})
-    this.searchEl.addEventListener("keyup", MoulinetteUtils.delay(() => { this.updateData(true)}, MoulinetteBrowser.SEARCH_DELAY))
+    const searchEl = headerEl.createEl("input", { value: this.filters.terms, placeholder: "Search ..."})
+    searchEl.addEventListener("keyup", MoulinetteUtils.delay(() => { 
+      this.filters.terms = searchEl.value;
+      this.updateData(true)
+    }, MoulinetteBrowser.SEARCH_DELAY))
     const creatorsEl = headerEl.createEl("select", { })
     creatorsEl.createEl("option", { value: '-1', text: `-- Creators --` })
     this.creators.forEach((c, idx) => {
       const count = c.packs.reduce((acc, objet) => acc + objet.assets.length, 0);
-      creatorsEl.createEl("option", { value: '' + idx, text: `${c.name} (${count.toLocaleString()})` })
+      const option = creatorsEl.createEl("option", { value: '' + idx, text: `${c.name} (${count.toLocaleString()})` })
+      if(this.filters.creator == idx) {
+        option.setAttribute('selected', 'selected')
+      }
     })
     const packsEl = headerEl.createEl("select", { })
-    packsEl.createEl("option", { value: '-1', text: `-- Pack --` })
+    packsEl.createEl("option", { value: '', text: `-- Pack --` })
 
     creatorsEl.addEventListener("change", (ev) => {
-      const selectedValue = (ev.target as HTMLSelectElement).value;
-      this.selCreator = Number(selectedValue)
-      // update packs
-      packsEl.innerHTML = ""
-      this.selPack = -1
-      packsEl.createEl("option", { value: '-1', text: `-- Packs --` })
-      if(this.selCreator >= 0) {
-        const packs = this.creators[this.selCreator].packs.sort((a,b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
-        for(const p of packs) {
-          packsEl.createEl("option", { value: '' + p.id, text: `${p.name} (${p.assets.length.toLocaleString()})` })
-        }
-      }
+      this.filters.creator = Number((ev.target as HTMLSelectElement).value);
+      this.filters.packs = []
+      this.onSelectCreator(packsEl)
       this.updateData(true)
     });
 
     packsEl.addEventListener("change", (ev) => {
-      const selectedValue = (ev.target as HTMLSelectElement).value;
-      this.selPack = Number(selectedValue)
+      const selPacksValue = (ev.target as HTMLSelectElement).value;
+      this.filters.packs = selPacksValue.length == 0 ? [] : selPacksValue.split(',').map(function(item) {
+        return parseInt(item, 10);
+      });
       this.updateData(true)
     });
 
-    const imageButton = headerEl.createEl("button", {})
-    imageButton.createEl("img").setAttribute('src', MoulinetteUtils.IMAGE_ICON);
-    const audioButton = headerEl.createEl("button", {})
-    audioButton.createEl("img").setAttribute('src', MoulinetteUtils.AUDIO_ICON);
-    const mdButton = headerEl.createEl("button", {})
-    mdButton.createEl("img").setAttribute('src', MoulinetteUtils.TEXT_ICON);
-
+    const imageButton = headerEl.createEl("button", { cls: this.filters.type == MoulinetteAsset.TYPE_IMAGE ? "highlight" : ""})
+    setIcon(imageButton, "image")
+    const audioButton = headerEl.createEl("button", { cls: this.filters.type == MoulinetteAsset.TYPE_AUDIO ? "highlight" : ""})
+    setIcon(audioButton, "music")
+    const mdButton = headerEl.createEl("button", { cls: this.filters.type == MoulinetteAsset.TYPE_TEXT ? "highlight" : ""})
+    setIcon(mdButton, "file-text")
+    
     // filter by asset type
     imageButton.addEventListener("click", (ev) => this.applyTypeFilter(MoulinetteAsset.TYPE_IMAGE, imageButton, audioButton, mdButton))
     audioButton.addEventListener("click", (ev) => this.applyTypeFilter(MoulinetteAsset.TYPE_AUDIO, imageButton, audioButton, mdButton))
@@ -93,26 +96,53 @@ export class MoulinetteBrowser extends Modal {
       }      
     });
 
+    // init filters
+    this.onSelectCreator(packsEl)
+    this.updateData(true)
   }
 
   onClose() {
     let { contentEl } = this;
     contentEl.empty();
+    this.plugin.lastFilters = this.filters
+  }
+
+  /**
+   * Updates the packs list
+   * @param packsEl HTML select list
+   */
+  onSelectCreator(packsEl: HTMLSelectElement) {
+    // update packs
+    packsEl.innerHTML = ""
+    packsEl.createEl("option", { value: '', text: `-- Packs --` })
+    if(this.filters.creator >= 0) {
+      const packs = MoulinetteUtils.combinePacks(this.creators[this.filters.creator].packs)
+      const sortedNames = Object.keys(packs).sort((a,b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
+      const selected = this.filters.packs.join()
+      for(const sn of sortedNames) {
+        const values = packs[sn].map((p) => p.id).join()
+        const count = packs[sn].reduce((acc, cur) => acc + cur.assets.length, 0)
+        const option = packsEl.createEl("option", { value: values, text: `${sn} (${count.toLocaleString()})` })
+        if(selected == values) {
+          option.setAttribute('selected', 'selected')
+        }
+      }
+    }
   }
 
   applyTypeFilter(type: number, imageButton: HTMLButtonElement, audioButton: HTMLButtonElement, mdButton: HTMLButtonElement) {
-    this.selType = this.selType == type ? 0 : type
-    if(this.selType == MoulinetteAsset.TYPE_IMAGE) {
+    this.filters.type = this.filters.type == type ? 0 : type
+    if(this.filters.type == MoulinetteAsset.TYPE_IMAGE) {
       imageButton.addClass("highlight")
     } else {
       imageButton.removeClass("highlight")
     }
-    if(this.selType == MoulinetteAsset.TYPE_AUDIO) {
+    if(this.filters.type == MoulinetteAsset.TYPE_AUDIO) {
       audioButton.addClass("highlight")
     } else {
       audioButton.removeClass("highlight")
     }
-    if(this.selType == MoulinetteAsset.TYPE_TEXT) {
+    if(this.filters.type == MoulinetteAsset.TYPE_TEXT) {
       mdButton.addClass("highlight")
     } else {
       mdButton.removeClass("highlight")
@@ -149,9 +179,9 @@ export class MoulinetteBrowser extends Modal {
     }
     else if(asset instanceof MoulinetteSound) {
       const assetEl = this.assetsEl.createDiv({ cls: "snd" })
-      const thumb = assetEl.createEl("img")
-      thumb.setAttribute("src", MoulinetteUtils.AUDIO_ICON)
-      thumb.setAttribute("title", asset.path)
+      assetEl.setAttribute("title", asset.path)
+      const thumb = assetEl.createDiv()
+      setIcon(thumb, "music")
       const filename = asset.path.split("/").pop()?.split(".")[0]
       assetEl.createEl("div", { cls: "dur", text: MoulinetteUtils.formatDuration(asset.duration) })
       assetEl.createEl("div", { text: filename })
@@ -177,9 +207,9 @@ export class MoulinetteBrowser extends Modal {
     }
     else if(asset instanceof MoulinetteText) {
       const assetEl = this.assetsEl.createDiv({ cls: "md" })
-      const thumb = assetEl.createEl("img")
-      thumb.setAttribute("src", MoulinetteUtils.TEXT_ICON)
-      thumb.setAttribute("title", asset.path)
+      assetEl.setAttribute("title", asset.path)
+      const thumb = assetEl.createDiv()
+      setIcon(thumb, "file-text")
       const filename = asset.path.split("/").pop()
       assetEl.createEl("div", { text: filename?.endsWith(".md") ? filename.slice(0, -3) : filename })
       assetEl.addEventListener("click", (ev) => {
@@ -213,35 +243,17 @@ export class MoulinetteBrowser extends Modal {
 
     let assetIdx = 0
     let noAddition = true
-    const terms = this.searchEl.value.length > 0 ? this.searchEl.value.toLocaleLowerCase().split(' ') : null
+    const terms = this.filters.terms.length > 0 ? this.filters.terms.toLocaleLowerCase().split(' ') : null
     
-    const creators = this.selCreator >= 0 ? [this.creators[this.selCreator]] : this.creators
+    const creators = this.filters.creator >= 0 ? [this.creators[this.filters.creator]] : this.creators
     for(const c of creators) {
       for(const p of c.packs) {
-        if(this.selPack >= 0 && p.id != this.selPack) continue
+        if(this.filters.packs.length > 0 && !this.filters.packs.includes(p.id)) continue
   
-        const fuseOptions = {
-          // isCaseSensitive: false,
-          // includeScore: false,
-          // shouldSort: true,
-          // includeMatches: false,
-          // findAllMatches: false,
-          // minMatchCharLength: 1,
-          // location: 0,
-          // threshold: 0.6,
-          // distance: 100,
-          // useExtendedSearch: false,
-          // ignoreLocation: false,
-          // ignoreFieldNorm: false,
-          // fieldNormWeight: 1,
-          keys: [
-            "path",
-          ]
-        };
         let assets = p.assets
         // filter by type
-        if(this.selType) {
-          assets = assets.filter((a) => this.selType == a.getType() )
+        if(this.filters.type) {
+          assets = assets.filter((a) => this.filters.type == a.getType() )
         }
         if(terms) {
           // TOO SLOW!!

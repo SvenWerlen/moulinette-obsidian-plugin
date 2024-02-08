@@ -1,6 +1,7 @@
 import { MoulinetteAsset, MoulinetteCreator, MoulinetteImage, MoulinettePack, MoulinetteSound, MoulinetteText } from "moulinette-entities";
 import { MoulinetteSearchModal } from "moulinette-search";
 import { MoulinetteUtils } from "moulinette-utils";
+import { setIcon } from "obsidian";
 
 export class MoulinetteAssetResult {
 
@@ -43,12 +44,17 @@ export class MoulinetteAssetResult {
    */
   renderHTML(modal : MoulinetteSearchModal, containerEl : Element) {
     const asset = containerEl.createEl("div", { cls: "asset" });
-    const img = asset.createEl("img");
     
     switch(this.ref.constructor.name) {
-      case "MoulinetteImage": img.setAttribute('src', this.thumbUrl); break;
-      case "MoulinetteSound": img.setAttribute('src', MoulinetteUtils.AUDIO_ICON); break;
-      case "MoulinetteText": img.setAttribute('src', MoulinetteUtils.TEXT_ICON); break;
+      case "MoulinetteImage": 
+        asset.createEl("img").setAttribute('src', this.thumbUrl); 
+        break;
+      case "MoulinetteSound": 
+        setIcon(asset.createDiv({ cls: 'icon'}), "music")
+        break;
+      case "MoulinetteText": 
+        setIcon(asset.createDiv({ cls: 'icon'}), "file-text")
+        break;
     }
     
     const info = asset.createEl("div", { cls: "info" });

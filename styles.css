@@ -38,6 +38,12 @@ If your plugin does not need CSS, delete this file.
   width: 100%;
 }
 
+.asset .icon {
+  display: flex;
+  align-items: center;
+  --icon-size: var(--icon-l);
+}
+
 .meta {
   display: flex;
   justify-content: flex-end;

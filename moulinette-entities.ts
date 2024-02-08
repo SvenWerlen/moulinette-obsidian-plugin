@@ -78,7 +78,7 @@ export class MoulinetteText extends MoulinetteAsset {
 }
 
 export class MoulinettePack {
-  id: Number
+  id: number
   name: string
   path: string
   sas: string
