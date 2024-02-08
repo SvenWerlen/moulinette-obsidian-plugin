@@ -1,5 +1,5 @@
 import { App, ButtonComponent, ExtraButtonComponent, Setting } from 'obsidian';
-import { MoulinettePlugin } from "main"
+import MoulinettePlugin from "main"
 import { PluginSettingTab } from "obsidian";
 import { randomUUID } from 'crypto';
 import { MoulinetteClient } from 'moulinette-client';
@@ -31,19 +31,6 @@ export class MoulinetteSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
     containerEl.createEl("h2", { text: "Moulinette Settings"})
-    /*
-    new Setting(containerEl)
-			.setName("Image default size")
-			.setDesc("Specify a size in pixels that Moulinette")
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));*/
-
-
     containerEl.createEl("h2", { text: "Moulinette Cloud integration"})
 
     this.refreshCloudIntegration(containerEl.createDiv({cls: "setting-item"}))
@@ -148,7 +135,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
       
       authInfo.createDiv({cls: "setting-item-name", text: "Your Vault is not linked to Moulinette yet"})
       const descr = authInfo.createDiv({cls: "setting-item-description"})
-      descr.createEl("span", { text: "By linking your Vault to Moulinette, you will be able to easily search and download content from creators and communities."} )
+      descr.createEl("span", { text: "By linking your Vault to Moulinette, you will be able to easily search and download content from creators and communities. "} )
       descr.createEl("a", { href: "https://www.moulinette.cloud/", text: "Learn more about Moulinette"} )
       const warn = descr.createDiv({ cls: "setting-warning", text: "Authentication in progress in your web browser. You have 2 minutes to complete the process!"} )
       
@@ -176,6 +163,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
                 // update settings
                 this.plugin.settings.sessionID = newGUID
                 await this.plugin.saveSettings();
+                this.plugin.clearCache()
                 this.refreshCloudIntegration(settingDIV)
               }
             }    
