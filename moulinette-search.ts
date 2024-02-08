@@ -3,7 +3,7 @@ import { MoulinetteClient } from "moulinette-client";
 import { MoulinetteAsset, MoulinetteCreator, MoulinetteImage, MoulinetteSound, MoulinetteText } from "moulinette-entities";
 import { MoulinetteAssetResult } from "moulinette-results";
 import { MoulinetteUtils } from "moulinette-utils";
-import { MarkdownView, SuggestModal } from "obsidian";
+import { MarkdownView, Notice, SuggestModal } from "obsidian";
 
 interface FilterTag {
   id: string
@@ -126,6 +126,14 @@ export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
         if (imgPath && view) {
           view.editor.replaceSelection(`![[${imgPath}]]`)
         }
+        else {
+          navigator.clipboard.writeText(`![[${imgPath}]]`).then(() => {
+            new Notice("No active view. Path copied into clipboard");
+          })
+          .catch(() => {
+            new Notice("No active view AND cannot write into clipboard");
+          });
+        }
       })
     }
     // Download & insert markdown
@@ -135,6 +143,14 @@ export class MoulinetteSearchModal extends SuggestModal<MoulinetteAssetResult> {
         // Make sure the user is editing a Markdown file.
         if (mdText && view) {
           view.editor.replaceSelection(mdText)
+        }
+        else {
+          navigator.clipboard.writeText(mdText).then(() => {
+            new Notice("No active view. Text copied into clipboard");
+          })
+          .catch(() => {
+            new Notice("No active view AND cannot write into clipboard");
+          });
         }
       })
     }

@@ -222,7 +222,7 @@ export class MoulinetteBrowser extends Modal {
           }
           else {
             navigator.clipboard.writeText(mdText).then(() => {
-              new Notice("No active view. Path copied into clipboard");
+              new Notice("No active view. Text copied into clipboard");
             })
             .catch(() => {
               new Notice("No active view AND cannot write into clipboard");
