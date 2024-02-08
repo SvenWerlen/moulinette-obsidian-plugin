@@ -1,4 +1,3 @@
-import Fuse from 'fuse.js'
 import MoulinettePlugin from 'main';
 import { MoulinetteAsset, MoulinetteCreator, MoulinetteImage, MoulinettePack, MoulinetteSound, MoulinetteText } from "moulinette-entities";
 import { MoulinetteUtils } from "moulinette-utils";

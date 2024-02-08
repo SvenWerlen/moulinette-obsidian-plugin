@@ -204,3 +204,16 @@ If your plugin does not need CSS, delete this file.
 .browser .assets .md div, .browser .assets .snd div {
   font-size: 12px;
 }
+
+.progress {
+  min-height: 65px;
+  overflow: hidden;
+}
+
+.progress .message {
+  display: flex;
+}
+
+.progress .message div {
+  margin-right: 5px;
+}

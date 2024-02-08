@@ -5,6 +5,7 @@ import { MoulinetteUtils } from 'moulinette-utils';
 import { MoulinetteSettingTab } from 'moulinette-settings';
 import { MoulinetteClient } from 'moulinette-client';
 import { MoulinetteBrowser, MoulinetteBrowserFilters } from 'moulinette-browser';
+import { MoulinetteProgress } from 'moulinette-progress';
 
 
 interface MoulinetteSettings {
@@ -26,8 +27,6 @@ export default class MoulinettePlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		await this.getCreators()
-
 		this.lastFilters = new MoulinetteBrowserFilters()
 
 		this.registerEvent(this.app.vault.on('create', async (file) => {
@@ -103,7 +102,10 @@ export default class MoulinettePlugin extends Plugin {
 		if (this.creators && (start - this.creatorsDate < MoulinettePlugin.CACHE_TIMEOUT)) {
 			return this.creators
 		} else {
+			const progress = new MoulinetteProgress(this.app)
+			progress.open()
 			this.creators = await MoulinetteClient.getUserAssets(this.settings.sessionID)
+			progress.close()
 			this.creatorsDate = start
 			return this.creators
 		}
