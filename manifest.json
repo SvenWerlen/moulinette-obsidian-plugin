@@ -1,7 +1,7 @@
 {
 	"id": "moulinette-plugin",
 	"name": "Moulinette Plugin",
-	"version": "1.0.1",
+	"version": "0.2.1",
 	"minAppVersion": "0.15.0",
 	"description": "Moulinette Cloud integration",
 	"author": "Sven Werlen (Moulinette)",
