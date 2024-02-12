@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, addIcon } from 'obsidian';
+import { App, Editor, FileSystemAdapter, MarkdownView, Modal, Notice, Platform, Plugin, PluginSettingTab, Setting, TAbstractFile, addIcon } from 'obsidian';
 import { MoulinetteSearchModal } from 'moulinette-search';
 import { MoulinetteAsset, MoulinetteCreator, MoulinettePack } from 'moulinette-entities';
 import { MoulinetteUtils } from 'moulinette-utils';
@@ -80,6 +80,21 @@ export default class MoulinettePlugin extends Plugin {
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new MoulinetteSettingTab(this.app, this));
+
+		// Support local paths in <img>
+		// Inspired by : https://github.com/talengu/obsidian-local-img-plugin/blob/master/main.ts
+		this.registerMarkdownPostProcessor((element, ctx) => {
+			const targetLinks = Array.from(element.getElementsByTagName("img"))
+			for (const link of targetLinks) {
+				let clean_link = link.src.replace('app://obsidian.md/', '').replace('capacitor://localhost/', '')
+				let full_link = this.app.vault.adapter.getResourcePath(clean_link)
+				link.src = full_link
+				if(Platform.isMobile) {
+					link.style.objectFit = "contain"
+					link.height = 100
+				}
+			}
+		});
 	}
 
 	onunload() {
@@ -151,4 +166,5 @@ export default class MoulinettePlugin extends Plugin {
 			}
 		}
 	}
+
 }
