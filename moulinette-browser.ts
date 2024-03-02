@@ -95,6 +95,12 @@ export class MoulinetteBrowser extends Modal {
       }      
     });
 
+    // footer
+    const footer = contentEl.createDiv({ cls: "footer"})
+    const icon = footer.createDiv("div")
+    setIcon(icon, "info")
+    footer.createSpan({text: "Hold CTRL/Command key to download multiple assets."})
+
     // init filters
     this.onSelectCreator(packsEl)
     this.updateData(true)
@@ -172,7 +178,11 @@ export class MoulinetteBrowser extends Modal {
               new Notice("No active view AND cannot write into clipboard");
             });
           }
-          this.close()
+          if(!ev.ctrlKey) {
+            this.close()
+          } else {
+            new Notice(`Image ${imgPath?.split("/").pop()} downloaded`);
+          }
         })
       })
     }
@@ -200,7 +210,11 @@ export class MoulinetteBrowser extends Modal {
               new Notice("No active view AND cannot write into clipboard");
             });
           }
-          this.close()
+          if(!ev.ctrlKey) {
+            this.close()
+          } else {
+            new Notice(`Sound ${sndPath?.split("/").pop()} downloaded`);
+          }
         })
       })
     }
@@ -227,7 +241,11 @@ export class MoulinetteBrowser extends Modal {
               new Notice("No active view AND cannot write into clipboard");
             });
           }
-          this.close()
+          if(!ev.ctrlKey) {
+            this.close()
+          } else {
+            new Notice(`Text ${asset.path} downloaded`);
+          }
         })
       })
     }

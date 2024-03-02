@@ -10,10 +10,12 @@ import { MoulinetteProgress } from 'moulinette-progress';
 
 interface MoulinetteSettings {
 	sessionID: string;
+	downloadFolder: string;
 }
 
 const DEFAULT_SETTINGS: MoulinetteSettings = {
-	sessionID: ''
+	sessionID: '',
+	downloadFolder: 'moulinette'
 }
 
 export default class MoulinettePlugin extends Plugin {
@@ -32,6 +34,8 @@ export default class MoulinettePlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('create', async (file) => {
 			this.downloadPage(file)
 		}));
+
+		MoulinetteUtils.PREFIX = this.settings.downloadFolder + "/"
 
 		// This creates an icon in the left ribbon.
 		this.addRibbonIcon('hammer', 'Moulinette Browser', (evt: MouseEvent) => {

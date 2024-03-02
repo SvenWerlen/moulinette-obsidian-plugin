@@ -3,6 +3,7 @@ import MoulinettePlugin from "main"
 import { PluginSettingTab } from "obsidian";
 import { randomUUID } from 'crypto';
 import { MoulinetteClient } from 'moulinette-client';
+import { MoulinetteUtils } from 'moulinette-utils';
 
 
 export class MoulinetteSettingTab extends PluginSettingTab {
@@ -31,6 +32,19 @@ export class MoulinetteSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
     containerEl.createEl("h2", { text: "Moulinette Settings"})
+
+    new Setting(containerEl)
+			.setName('Download folder')
+			.setDesc('Name of the directory where the files will be downloaded.')
+			.addText(text => text
+				.setPlaceholder('moulinette')
+				.setValue(this.plugin.settings.downloadFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.downloadFolder = value && value.length > 0 ? value : "moulinette";
+          MoulinetteUtils.PREFIX = this.plugin.settings.downloadFolder + "/"
+					await this.plugin.saveSettings();
+				}));
+
     containerEl.createEl("h2", { text: "Moulinette Cloud integration"})
 
     this.refreshCloudIntegration(containerEl.createDiv({cls: "setting-item"}))

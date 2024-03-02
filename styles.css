@@ -205,6 +205,16 @@ If your plugin does not need CSS, delete this file.
   font-size: 12px;
 }
 
+.browser .footer {
+  display: flex;
+  position: absolute;
+  bottom: 6px;
+}
+
+.browser .footer span {
+  margin-left: 5px;
+}
+
 .progress {
   min-height: 65px;
   overflow: hidden;
