@@ -31,7 +31,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 		containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Moulinette Settings"})
+    //containerEl.createEl("h2", { text: "Moulinette Settings"})
 
     new Setting(containerEl)
 			.setName('Download folder')
