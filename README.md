@@ -35,7 +35,7 @@ Visit [Moulinette Marketplace](https://assets.moulinette.cloud/marketplace/creat
 Your Vault/
    .obsidian/
       plugins/
-         moulinette-obsidian-plugin/
+         moulinette-plugin/
             main.js
             manifest.json
             styles.css
