@@ -1,6 +1,6 @@
-import { App, Editor, FileSystemAdapter, MarkdownView, Modal, Notice, Platform, Plugin, PluginSettingTab, Setting, TAbstractFile, addIcon } from 'obsidian';
+import { MarkdownView, Notice, Platform, Plugin, TAbstractFile } from 'obsidian';
 import { MoulinetteSearchModal } from 'moulinette-search';
-import { MoulinetteAsset, MoulinetteCreator, MoulinettePack } from 'moulinette-entities';
+import { MoulinetteCreator } from 'moulinette-entities';
 import { MoulinetteUtils } from 'moulinette-utils';
 import { MoulinetteSettingTab } from 'moulinette-settings';
 import { MoulinetteClient } from 'moulinette-client';
@@ -44,8 +44,8 @@ export default class MoulinettePlugin extends Plugin {
 
 		this.addCommand({
 			id: 'moulinette-browser',
-			name: 'Moulinette Browser',
-			hotkeys: [{ key: 'M', modifiers: ['Ctrl', 'Shift'] }],
+			name: 'Open Moulinette Browser',
+			//hotkeys: [{ key: 'M', modifiers: ['Ctrl', 'Shift'] }],
 			callback: () => {
 				this.getCreators().then((creators) => new MoulinetteBrowser(this, creators, this.lastFilters).open())
 			}
@@ -75,8 +75,8 @@ export default class MoulinettePlugin extends Plugin {
 
 		this.addCommand({
 			id: 'moulinette-search',
-			name: 'Search on Moulinette Cloud',
-			hotkeys: [{ key: 'M', modifiers: ['Ctrl'] }],
+			name: 'Open Quick Search',
+			//hotkeys: [{ key: 'M', modifiers: ['Ctrl'] }],
 			callback: () => {
 				this.getCreators().then((creators) => new MoulinetteSearchModal(this, creators).open())
 			},
