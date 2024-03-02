@@ -1,6 +1,6 @@
 {
 	"id": "moulinette-plugin",
-	"name": "Moulinette Plugin",
+	"name": "Moulinette Search for TTRPG",
 	"version": "0.4.0",
 	"minAppVersion": "0.15.0",
 	"description": "Search, browse and download TTRPG (tabletop role-playing game) content from Moulinette Cloud.",
