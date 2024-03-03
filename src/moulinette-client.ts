@@ -55,7 +55,7 @@ export class MoulinetteClient {
    */
   static async getUserAssets(userId: string): Promise<MoulinetteCreator[]> {
     userId = userId && userId.length == 26 ? userId : "demouser"
-    const result = await MoulinetteClient.get(`/assets/${userId}`)
+    const result = await MoulinetteClient.get(`/assets/${userId}?client=obsidian&ms=${new Date().getTime()}`)
     if(result && result.status == 200) {
       return MoulinetteCreator.importCreators(result.data)
     } else {
