@@ -1,7 +1,7 @@
 {
-	"name": "moulinette-obsidian-plugin",
-	"version": "1.0.0",
-	"description": "Moulinette plugin for Obsidian",
+	"name": "moulinette",
+	"version": "0.4.1",
+	"description": "Search, browse and download TTRPG (tabletop role-playing game) content from Moulinette Cloud.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
