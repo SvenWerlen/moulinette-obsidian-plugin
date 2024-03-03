@@ -201,7 +201,7 @@ export class MoulinetteUtils {
   static delay(callback: Function, ms: number) {
     let timer: NodeJS.Timeout;
     return function() {
-      var context = this, args = arguments;
+      const context = this, args = arguments;
       clearTimeout(timer);
       timer = setTimeout(function () {
         callback.apply(context, args);
