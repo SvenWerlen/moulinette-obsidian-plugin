@@ -11,6 +11,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
   plugin: MoulinettePlugin;
   timer: NodeJS.Timer;
   timerIter: number;
+  warn: HTMLDivElement;
 
 	constructor(app: App, plugin: MoulinettePlugin) {
 		super(app, plugin);
@@ -25,6 +26,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
     if(this.timer) {
       clearInterval(this.timer);
     }
+    this.warn.removeClass("visible")
   }
 
 	display(): void {
@@ -151,20 +153,21 @@ export class MoulinetteSettingTab extends PluginSettingTab {
       const descr = authInfo.createDiv({cls: "setting-item-description"})
       descr.createEl("span", { text: "By linking your Vault to Moulinette, you will be able to easily search and download content from creators and communities. "} )
       descr.createEl("a", { href: "https://www.moulinette.cloud/", text: "Learn more about Moulinette"} )
-      const warn = descr.createDiv({ cls: "setting-warning", text: "Authentication in progress in your web browser. You have 2 minutes to complete the process!"} )
+      this.warn = descr.createDiv({ cls: "setting-warning", text: "Authentication in progress in your web browser. You have 2 minutes to complete the process!"} )
       
       const authCtrl = settingDIV.createDiv({cls: "setting-item-control"})
       const button = new ButtonComponent(authCtrl.createDiv("actions"))
         .setButtonText("Authenticate")
         .onClick(async () => {
           window.open(patreonURL, "_blank")
-          warn.style.display = "block" // show warning (process in progress)
-          
+          this.warn.addClass("visible") // show warning (process in progress)
+
+          //test
           this.timerIter = 120
           this.timer = setInterval( async() => {
             // stop after 2 minutes maximum
             if(this.timerIter <= 0) {
-              button.setButtonText(`Timed out!`)
+              button.setButtonText(`Retry`)
               return clearInterval(this.timer);
             }
             this.timerIter--;

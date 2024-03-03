@@ -93,11 +93,14 @@ If your plugin does not need CSS, delete this file.
   background-color: #298e46;
   box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
 }
-}
 
 .setting-warning {
   display: none;
   color: red;
+}
+
+.setting-warning.visible {
+  display: block;
 }
 
 .actions button {

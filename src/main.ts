@@ -93,10 +93,6 @@ export default class MoulinettePlugin extends Plugin {
 				let clean_link = link.src.replace('app://obsidian.md/', '').replace('capacitor://localhost/', '')
 				let full_link = this.app.vault.adapter.getResourcePath(clean_link)
 				link.src = full_link
-				if(Platform.isMobile) {
-					link.style.objectFit = "contain"
-					link.height = 100
-				}
 			}
 		});
 	}
