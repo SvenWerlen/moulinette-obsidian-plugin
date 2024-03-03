@@ -1,6 +1,6 @@
 {
 	"name": "moulinette",
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"description": "Search, browse and download TTRPG (tabletop role-playing game) content from Moulinette Cloud.",
 	"main": "main.js",
 	"scripts": {
