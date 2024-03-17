@@ -211,12 +211,4 @@ export class MoulinetteUtils {
     return newPacks
   }
 
-  /**
-   * Removes all elements from given DIV without using risky APIs
-   */
-  static clearDiv(divEl: Element) {
-    while (divEl.firstChild) {
-      divEl.removeChild(divEl.firstChild);
-    }  
-  }
 }

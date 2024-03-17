@@ -260,7 +260,7 @@ export class MoulinetteBrowser extends Modal {
 
   updateData(clear: boolean) {
     if(clear) {
-      MoulinetteUtils.clearDiv(this.assetsEl)
+      this.assetsEl.empty()
       this.page = 0
     }
 
