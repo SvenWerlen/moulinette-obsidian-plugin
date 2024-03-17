@@ -34,8 +34,6 @@ export class MoulinetteSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 		containerEl.empty();
 
-    //containerEl.createEl("h2", { text: "Moulinette Settings"})
-
     new Setting(containerEl)
 			.setName('Download folder')
 			.setDesc('Name of the directory where the files will be downloaded.')
@@ -48,7 +46,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-    containerEl.createEl("h2", { text: "Moulinette Cloud integration"})
+    new Setting(containerEl).setName('Moulinette Cloud integration').setHeading();
 
     this.refreshCloudIntegration(containerEl.createDiv({cls: "setting-item"}))
 
