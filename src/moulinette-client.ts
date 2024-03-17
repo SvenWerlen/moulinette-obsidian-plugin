@@ -1,4 +1,5 @@
 import { MoulinetteCreator } from "moulinette-entities";
+import { requestUrl } from "obsidian";
 
 /**
  * Client for Moulinette server
@@ -14,10 +15,10 @@ export class MoulinetteClient {
   /*
    * Sends a request to server and returns the response
    */
-  static async fetch(URI: string, method: string, data: object | null) {
-    let params = data ? { method: method, headers: MoulinetteClient.HEADERS, body: JSON.stringify(data) } : { method: method, headers: MoulinetteClient.HEADERS }
-
-    const response = await fetch(`${MoulinetteClient.SERVER_URL}${URI}`, params).catch(function(e) {
+  static async requestServer(URI: string, method: string, data: object | null) {
+    let params = { url: `${MoulinetteClient.SERVER_URL}${URI}`, method, headers: MoulinetteClient.HEADERS, body: data ? JSON.stringify(data) : undefined }
+ 
+    const response = await requestUrl(params).catch(function(e) {
       console.log(`MoulinetteClient | Cannot establish connection to server ${MoulinetteClient.SERVER_URL}`, e)
     });
     return response
@@ -27,11 +28,11 @@ export class MoulinetteClient {
    * Sends a request to server and return the response or null (if server unreachable)
    */
   static async send(URI: string, method: string, data: object | null) {
-    const response = await this.fetch(URI, method, data)
+    const response = await this.requestServer(URI, method, data)
     if(!response) {
       return null;
     }
-    return { 'status': response.status, 'data': await response.json() }
+    return { 'status': response.status, 'data': await response.json }
   }
   
   static async get(URI: string) { return MoulinetteClient.send(URI, "GET", null) }

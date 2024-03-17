@@ -1,7 +1,7 @@
 import MoulinettePlugin from 'main';
 import { MoulinetteClient } from 'moulinette-client';
 import { MoulinetteCreator, MoulinettePack } from 'moulinette-entities';
-import { Vault, normalizePath } from 'obsidian';
+import { Vault, normalizePath, requestUrl } from 'obsidian';
 
 /**
  * Moulinette asset
@@ -65,10 +65,10 @@ export class MoulinetteUtils {
     
     // download file
     if(!(await vault.adapter.exists(normalizePath(imagePath)))) {
-      await fetch(url)
+      await requestUrl(url)
         .then(response => {
-          if (!response.ok) { throw new Error(`HTTP ${response.status} - ${response.statusText}`) }
-          return response.arrayBuffer();
+          if (response.status != 200) { throw new Error(`HTTP ${response.status} - ${response.text}`) }
+          return response.arrayBuffer;
         })
         .then(buffer => {
           vault.createBinary(imagePath, buffer)
@@ -95,11 +95,11 @@ export class MoulinetteUtils {
   static async downloadMarkdown(plugin: MoulinettePlugin, uri: string) {
     let markdownContent = ""
     const sessionId = plugin.settings.sessionID ? plugin.settings.sessionID : "demo-user"
-    await MoulinetteClient.fetch(uri.replace("SESSIONID", sessionId), "get", null)
+    await MoulinetteClient.requestServer(uri.replace("SESSIONID", sessionId), "get", null)
       .then(response => {
         if (!response) { throw new Error(`Error during request`) }
-        if (!response.ok) { throw new Error(`HTTP ${response.status} - ${response.statusText}`) }
-        return response.text();
+        if (response.status != 200) { throw new Error(`HTTP ${response.status} - ${response.text}`) }
+        return response.text;
       })
       .then(text => {
         markdownContent = text
