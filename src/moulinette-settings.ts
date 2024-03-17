@@ -9,22 +9,23 @@ import { MoulinetteUtils } from 'moulinette-utils';
 export class MoulinetteSettingTab extends PluginSettingTab {
 	
   plugin: MoulinettePlugin;
-  timer: NodeJS.Timer;
-  timerIter: number;
+  intervalRef: number;  // reference to window.setInterval()
+  intervalIter: number; // interval iterations (count)
   warn: HTMLDivElement;
 
 	constructor(app: App, plugin: MoulinettePlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
-    this.timerIter = 0;
+    this.intervalRef = 0
+    this.intervalIter = 0;
 	}
 
   /**
    * Extra cleanup : make sure no authentication in progress
    */
   hide() {
-    if(this.timer) {
-      clearInterval(this.timer);
+    if(this.intervalRef) {
+      window.clearInterval(this.intervalRef)
     }
     this.warn.removeClass("visible")
   }
@@ -162,21 +163,21 @@ export class MoulinetteSettingTab extends PluginSettingTab {
           window.open(patreonURL, "_blank")
           this.warn.addClass("visible") // show warning (process in progress)
 
-          //test
-          this.timerIter = 120
-          this.timer = setInterval( async() => {
+          // check every 2 seconds if authentication was successfully completed
+          this.intervalIter = 120
+          this.intervalRef = window.setInterval( async() => {
             // stop after 2 minutes maximum
-            if(this.timerIter <= 0) {
+            if(this.intervalIter <= 0) {
               button.setButtonText(`Retry`)
-              return clearInterval(this.timer);
+              return window.clearInterval(this.intervalRef);
             }
-            this.timerIter--;
-            button.setButtonText(`${this.timerIter} sec`)
+            this.intervalIter--;
+            button.setButtonText(`${this.intervalIter} sec`)
             
-            if(this.timerIter % 2) {
+            if(this.intervalIter % 2) {
               const ready = await MoulinetteClient.get(`/user/${newGUID}/ready?patreon=1`)
               if(ready && ready.status == 200 && ready.data.status == "yes") {
-                clearInterval(this.timer);
+                window.clearInterval(this.intervalRef);
                 // update settings
                 this.plugin.settings.sessionID = newGUID
                 await this.plugin.saveSettings();
