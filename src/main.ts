@@ -43,7 +43,7 @@ export default class MoulinettePlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'moulinette-browser',
+			id: 'browser',
 			name: 'Open Moulinette Browser',
 			//hotkeys: [{ key: 'M', modifiers: ['Ctrl', 'Shift'] }],
 			callback: () => {
@@ -52,7 +52,7 @@ export default class MoulinettePlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'moulinette-clear-cache',
+			id: 'clear-cache',
 			name: 'Clear cache',
 			callback: () => {
 				this.clearCache()
@@ -60,7 +60,7 @@ export default class MoulinettePlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'moulinette-reload-page',
+			id: 'reload-page',
 			name: 'Re-download page',
 			callback: () => {
 				const curView = this.app.workspace.getActiveViewOfType(MarkdownView)
@@ -74,7 +74,7 @@ export default class MoulinettePlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'moulinette-search',
+			id: 'search',
 			name: 'Open Quick Search',
 			//hotkeys: [{ key: 'M', modifiers: ['Ctrl'] }],
 			callback: () => {
