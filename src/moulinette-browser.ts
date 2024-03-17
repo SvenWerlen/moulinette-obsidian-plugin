@@ -21,12 +21,14 @@ export class MoulinetteBrowser extends Modal {
   assetsEl: HTMLElement             // HTML div for rendering assets
   ignoreScroll: boolean             // flag to ignore scroll
   page: number                      // rendered page (pagination)
+  keyUpTimerRef: number             // timer to delay keyup event
   
   constructor(plugin: MoulinettePlugin, creators: MoulinetteCreator[], filters: MoulinetteBrowserFilters) {
     super(plugin.app);
     this.plugin = plugin
     this.creators = creators.sort((a,b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
     this.filters = filters ? filters : new MoulinetteBrowserFilters()
+    this.keyUpTimerRef = 0
   }
 
   onOpen() {
@@ -36,10 +38,13 @@ export class MoulinetteBrowser extends Modal {
     //contentEl.createEl("h3", { text: "Moulinette Browser" });
     const headerEl = contentEl.createEl("div", { cls: "searchbar" });
     const searchEl = headerEl.createEl("input", { value: this.filters.terms, placeholder: "Search ..."})
-    searchEl.addEventListener("keyup", MoulinetteUtils.delay(() => { 
-      this.filters.terms = searchEl.value;
-      this.updateData(true)
-    }, MoulinetteBrowser.SEARCH_DELAY))
+    searchEl.addEventListener("keyup", () => { 
+      if(this.keyUpTimerRef) window.clearTimeout(this.keyUpTimerRef)
+      this.keyUpTimerRef = window.setTimeout( () => {
+        this.filters.terms = searchEl.value;
+        this.updateData(true)
+      }, MoulinetteBrowser.SEARCH_DELAY)
+    })
     const creatorsEl = headerEl.createEl("select", { })
     creatorsEl.createEl("option", { value: '-1', text: `-- Creators --` })
     this.creators.forEach((c, idx) => {
@@ -110,6 +115,7 @@ export class MoulinetteBrowser extends Modal {
     let { contentEl } = this;
     contentEl.empty();
     this.plugin.lastFilters = this.filters
+    if(this.keyUpTimerRef) window.clearTimeout(this.keyUpTimerRef)
   }
 
   /**

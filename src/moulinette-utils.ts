@@ -187,25 +187,6 @@ export class MoulinetteUtils {
     return (durHr > 0 ? `${durHr}:${durMin.toString().padStart(2,'0')}` : durMin.toString()) + ":" + durSec.toString().padStart(2,'0')
   }
 
-
-  /**
-   * From : https://stackoverflow.com/questions/1909441/how-to-delay-the-keyup-handler-until-the-user-stops-typing
-   * 
-   * @param callback function
-   * @param ms time (in ms) to wait before calling the function
-   * @returns 
-   */
-  static delay(callback: Function, ms: number) {
-    let timer: NodeJS.Timeout;
-    return function() {
-      const context = this, args = arguments;
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        callback.apply(context, args);
-      }, ms || 0);
-    };
-  }
-
   /**
    * Merge packs with same name
    */
