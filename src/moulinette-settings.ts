@@ -73,7 +73,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
    */
   async refreshCloudIntegration(settingDIV : Element, force=false) {
   
-    MoulinetteUtils.clearDiv(settingDIV)
+    settingDIV.empty()
     const authInfo = settingDIV.createDiv({cls: "setting-item-info"})
     
     if(this.plugin.settings.sessionID && this.plugin.settings.sessionID.length == 26) {

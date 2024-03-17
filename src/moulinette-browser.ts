@@ -124,7 +124,7 @@ export class MoulinetteBrowser extends Modal {
    */
   onSelectCreator(packsEl: HTMLSelectElement) {
     // update packs
-    MoulinetteUtils.clearDiv(packsEl)
+    packsEl.empty()
     packsEl.createEl("option", { value: '', text: `-- Packs --` })
     if(this.filters.creator >= 0) {
       const packs = MoulinetteUtils.combinePacks(this.creators[this.filters.creator].packs)
