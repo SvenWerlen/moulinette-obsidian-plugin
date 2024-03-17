@@ -19,7 +19,8 @@ export class MoulinetteClient {
     let params = { url: `${MoulinetteClient.SERVER_URL}${URI}`, method, headers: MoulinetteClient.HEADERS, body: data ? JSON.stringify(data) : undefined }
  
     const response = await requestUrl(params).catch(function(e) {
-      console.log(`MoulinetteClient | Cannot establish connection to server ${MoulinetteClient.SERVER_URL}`, e)
+      console.error(`MoulinetteClient | Cannot establish connection to server ${MoulinetteClient.SERVER_URL}`, e)
+      return null
     });
     return response
   }
@@ -45,7 +46,6 @@ export class MoulinetteClient {
    * Retrieves user details (name, tiers, etc.)
    */
   static async getUser(userId: string, forceRefresh = false) {
-    console.log("Moulinette | Retrieving user details")
     const noCache = "?ms=" + new Date().getTime()
     const refresh = forceRefresh ? "force=1" : ""
     return await MoulinetteClient.get(`/user/${userId}${noCache}&${refresh}`)

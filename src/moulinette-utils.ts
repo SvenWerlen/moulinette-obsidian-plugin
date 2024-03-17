@@ -51,7 +51,7 @@ export class MoulinetteUtils {
       if(idx > 0) {
         imagePath = MoulinetteUtils.PREFIX + url.split("?file=")[1]
       } else {
-        console.log("Invalid URL", url)
+        console.warn(`Invalid URL: ${url}`)
         return null
       }
     }
@@ -149,7 +149,6 @@ export class MoulinetteUtils {
         const packId = assetPath.split("/")[0]
         for(const c of creators) {
           const pack = c.packs.find(p => p.packId == packId)
-          console.log(pack)
           if(pack) {
             let path = null
             
@@ -164,8 +163,6 @@ export class MoulinetteUtils {
               path = MoulinetteUtils.PREFIX + ( assetPath.startsWith("/") ? assetPath.substring(1) : assetPath )
             }
 
-            console.log(path) 
-            
             if(path) {
               // replace references
               newMarkdown = newMarkdown.replace(match[0], `${refMark}[[${path}]]`)
