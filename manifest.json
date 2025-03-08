@@ -1,7 +1,7 @@
 {
 	"id": "moulinette",
 	"name": "Moulinette Search for TTRPG",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"minAppVersion": "0.15.0",
 	"description": "Search, browse and download TTRPG (tabletop role-playing game) content from Moulinette Cloud.",
 	"author": "Sven Werlen (Moulinette)",
