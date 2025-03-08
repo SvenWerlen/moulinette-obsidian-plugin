@@ -90,8 +90,11 @@ export default class MoulinettePlugin extends Plugin {
 		this.registerMarkdownPostProcessor((element, ctx) => {
 			const targetLinks = Array.from(element.getElementsByTagName("img"))
 			for (const link of targetLinks) {
+				console.log("BEFORE", link)
 				let clean_link = link.src.replace('app://obsidian.md/', '').replace('capacitor://localhost/', '')
+				console.log("AFTER", clean_link)
 				let full_link = this.app.vault.adapter.getResourcePath(clean_link)
+				console.log("FULL", full_link)
 				link.src = full_link
 			}
 		});

@@ -45,6 +45,15 @@ export class MoulinetteBrowser extends Modal {
         this.updateData(true)
       }, MoulinetteBrowser.SEARCH_DELAY)
     })
+    searchEl.addEventListener("mousedown", (ev) => {
+      if (ev.button === 2) {
+        ev.preventDefault();
+        searchEl.value = '';
+        this.filters.terms = '';
+        this.updateData(true);
+      }
+    });
+
     const creatorsEl = headerEl.createEl("select", { })
     creatorsEl.createEl("option", { value: '-1', text: `-- Creators --` })
     this.creators.forEach((c, idx) => {
@@ -64,12 +73,32 @@ export class MoulinetteBrowser extends Modal {
       this.updateData(true)
     });
 
+    creatorsEl.addEventListener("mousedown", (ev) => {
+      if (ev.button === 2) {
+        ev.preventDefault();
+        creatorsEl.value = '-1';
+        this.filters.creator = -1;
+        this.filters.packs = [];
+        this.onSelectCreator(packsEl);
+        this.updateData(true);
+      }
+    });
+
     packsEl.addEventListener("change", (ev) => {
       const selPacksValue = (ev.target as HTMLSelectElement).value;
       this.filters.packs = selPacksValue.length == 0 ? [] : selPacksValue.split(',').map(function(item) {
         return parseInt(item, 10);
       });
       this.updateData(true)
+    });
+
+    packsEl.addEventListener("mousedown", (ev) => {
+      if (ev.button === 2) {
+        ev.preventDefault();
+        this.filters.packs = []
+        this.onSelectCreator(packsEl)
+        this.updateData(true);
+      }
     });
 
     const imageButton = headerEl.createEl("button", { cls: this.filters.type == MoulinetteAsset.TYPE_IMAGE ? "highlight" : ""})
@@ -164,7 +193,7 @@ export class MoulinetteBrowser extends Modal {
   generateAssetHTML(pack: MoulinettePack, asset: MoulinetteAsset, assetId: Number) {
     
     if(asset instanceof MoulinetteImage) {
-      const url = `${pack.path}/${asset.path}`.replace(".webp", "_thumb.webp") + (pack.sas ? "?" + pack.sas : "")
+      const url = `${pack.path}/${asset.path}`.split('.').slice(0, -1).join('.') + "_thumb.webp" + (pack.sas ? "?" + pack.sas : "")
       const thumb = this.assetsEl.createEl("img")
       thumb.setAttribute("src", url)
       thumb.setAttribute("title", asset.path)

@@ -181,9 +181,9 @@ export class MoulinetteUtils {
    * @returns string representation of the duration (65 sec = 1:05)
    */
   static formatDuration(duration: number): string {
-    const durHr = Math.floor(duration / (3600))
-    const durMin = Math.floor((duration - 3600*durHr)/60)
-    const durSec = duration % 60
+    const durHr = Math.round(Math.floor(duration / (3600)))
+    const durMin = Math.round(Math.floor((duration - 3600*durHr)/60))
+    const durSec = Math.round(duration % 60)
     return (durHr > 0 ? `${durHr}:${durMin.toString().padStart(2,'0')}` : durMin.toString()) + ":" + durSec.toString().padStart(2,'0')
   }
 

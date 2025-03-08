@@ -27,7 +27,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
     if(this.intervalRef) {
       window.clearInterval(this.intervalRef)
     }
-    this.warn.removeClass("visible")
+    this.warn?.removeClass("visible")
   }
 
 	display(): void {
@@ -79,7 +79,7 @@ export class MoulinetteSettingTab extends PluginSettingTab {
     if(this.plugin.settings.sessionID && this.plugin.settings.sessionID.length == 26) {
       // get user info
       const user = await MoulinetteClient.getUser(this.plugin.settings.sessionID, force)
-      if(user && user.status == 200) {
+      if(user && user.status == 200 && user.data.fullName) {
         // GUID has been updated (after 24 hours, for security reasons)
         if(user.data.guid) {
           this.plugin.settings.sessionID = user.data.guid
@@ -137,54 +137,50 @@ export class MoulinetteSettingTab extends PluginSettingTab {
               this.refreshCloudIntegration(settingDIV)
             })
         }
+        return;
       }
-      
-      //descr.createEl("span", { text: "By linking your Vault to Moulinette, you will be able to easily search and download content from creators and communities."} )
-      //descr.createEl("a", { href: "https://www.moulinette.cloud/", text: "Learn more about Moulinette"} )
-      //const warn = descr.createDiv({ cls: "setting-warning", text: "Authentication in progress in your web browser. You have 2 minutes to complete the process!"} )
     }
-    else {
-      const newGUID = randomUUID().replace(/-/g, '').substring(0, 26)
-      const callback = `${MoulinetteClient.SERVER_URL}/patreon/callback`
-      const patreonURL = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${MoulinetteClient.CLIENT_ID}&redirect_uri=${callback}&scope=identity identity.memberships&state=${newGUID}`
-      
-      authInfo.createDiv({cls: "setting-item-name", text: "Your Vault is not linked to Moulinette yet"})
-      const descr = authInfo.createDiv({cls: "setting-item-description"})
-      descr.createEl("span", { text: "By linking your Vault to Moulinette, you will be able to easily search and download content from creators and communities. "} )
-      descr.createEl("a", { href: "https://www.moulinette.cloud/", text: "Learn more about Moulinette"} )
-      this.warn = descr.createDiv({ cls: "setting-warning", text: "Authentication in progress in your web browser. You have 2 minutes to complete the process!"} )
-      
-      const authCtrl = settingDIV.createDiv({cls: "setting-item-control"})
-      const button = new ButtonComponent(authCtrl.createDiv("actions"))
-        .setButtonText("Authenticate")
-        .onClick(async () => {
-          window.open(patreonURL, "_blank")
-          this.warn.addClass("visible") // show warning (process in progress)
+    
+    const newGUID = randomUUID().replace(/-/g, '').substring(0, 26)
+    const callback = `${MoulinetteClient.SERVER_URL}/patreon/callback`
+    const patreonURL = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${MoulinetteClient.CLIENT_ID}&redirect_uri=${callback}&scope=identity identity.memberships&state=${newGUID}`
+    
+    authInfo.createDiv({cls: "setting-item-name", text: "Your Vault is not linked to Moulinette yet"})
+    const descr = authInfo.createDiv({cls: "setting-item-description"})
+    descr.createEl("span", { text: "By linking your Vault to Moulinette, you will be able to easily search and download content from creators and communities. "} )
+    descr.createEl("a", { href: "https://www.moulinette.cloud/", text: "Learn more about Moulinette"} )
+    this.warn = descr.createDiv({ cls: "setting-warning", text: "Authentication in progress in your web browser. You have 2 minutes to complete the process!"} )
+    
+    const authCtrl = settingDIV.createDiv({cls: "setting-item-control"})
+    const button = new ButtonComponent(authCtrl.createDiv("actions"))
+      .setButtonText("Authenticate")
+      .onClick(async () => {
+        window.open(patreonURL, "_blank")
+        this.warn.addClass("visible") // show warning (process in progress)
 
-          // check every 2 seconds if authentication was successfully completed
-          this.intervalIter = 120
-          this.intervalRef = window.setInterval( async() => {
-            // stop after 2 minutes maximum
-            if(this.intervalIter <= 0) {
-              button.setButtonText(`Retry`)
-              return window.clearInterval(this.intervalRef);
+        // check every 2 seconds if authentication was successfully completed
+        this.intervalIter = 120
+        this.intervalRef = window.setInterval( async() => {
+          // stop after 2 minutes maximum
+          if(this.intervalIter <= 0) {
+            button.setButtonText(`Retry`)
+            return window.clearInterval(this.intervalRef);
+          }
+          this.intervalIter--;
+          button.setButtonText(`${this.intervalIter} sec`)
+          
+          if(this.intervalIter % 2) {
+            const ready = await MoulinetteClient.get(`/user/${newGUID}/ready?patreon=1`)
+            if(ready && ready.status == 200 && ready.data.status == "yes") {
+              window.clearInterval(this.intervalRef);
+              // update settings
+              this.plugin.settings.sessionID = newGUID
+              await this.plugin.saveSettings();
+              this.plugin.clearCache()
+              this.refreshCloudIntegration(settingDIV)
             }
-            this.intervalIter--;
-            button.setButtonText(`${this.intervalIter} sec`)
-            
-            if(this.intervalIter % 2) {
-              const ready = await MoulinetteClient.get(`/user/${newGUID}/ready?patreon=1`)
-              if(ready && ready.status == 200 && ready.data.status == "yes") {
-                window.clearInterval(this.intervalRef);
-                // update settings
-                this.plugin.settings.sessionID = newGUID
-                await this.plugin.saveSettings();
-                this.plugin.clearCache()
-                this.refreshCloudIntegration(settingDIV)
-              }
-            }    
-          }, 1000);
-      });
-    }
+          }    
+        }, 1000);
+    });
   }
 }
